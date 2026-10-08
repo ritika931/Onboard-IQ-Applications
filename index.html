@@ -1,0 +1,1491 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>OnboardIQ · Applications</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+/* ============================================================
+   DESIGN TOKENS — copied from ironbank-face tailwind.config.js
+   ============================================================ */
+:root {
+  --hf-bg-blue: #F7F7FA; --hf-blue: #292C82; --hf-white: #FEFEFF; --hf-grey: #F5F5F5;
+  --hf-text-grey: #475467; --hf-light-grey: #DBDBDB; --hf-text-primary: #344054;
+  --hf-text-secondary: #667085; --hf-text-quaternary: #101828; --hf-btn-blue: #0a66ef;
+  --hf-blue-secondary: #3B86F7; --hf-label-bg: #e7f0fe; --hf-secondary-bg: #f3f7ff;
+  --hf-card-border: #F2F4F7; --hf-card-bg: #F9FAFB; --hf-secondary-border: #d0d5dd;
+  --hf-green-bg: #ebfdf2; --hf-text-green: #039754; --hf-success-bg: #d0fadf;
+  --hf-warning-bg: #feefc6; --hf-warning-border: #fcb022; --hf-error-bg: #fee3e1;
+  --hf-error-border: #f97066; --hf-red: #f04437; --hf-amber-text: #b54708; --hf-red-text: #b42318;
+  --radius: 8px; --sidebar-w: 248px;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { font-family: Inter, system-ui, -apple-system, sans-serif; font-size: 14px; color: var(--hf-text-primary); background: var(--hf-bg-blue); }
+button, input, select { font: inherit; color: inherit; }
+a { color: inherit; text-decoration: none; }
+[hidden] { display: none !important; }
+
+/* ---------- Layout ---------- */
+.app { display: flex; min-height: 100vh; }
+.sidebar { width: var(--sidebar-w); flex-shrink: 0; background: var(--hf-white); border-right: 1px solid var(--hf-card-border); display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+.brand { display: flex; align-items: center; gap: 10px; padding: 20px 20px 16px; }
+.brand-logo { width: 32px; height: 32px; border-radius: 8px; background: var(--hf-blue); color: #fff; display: grid; place-items: center; font-weight: 700; }
+.brand-name { font-weight: 700; color: var(--hf-blue); font-size: 15px; }
+.issuer { margin: 0 16px 12px; padding: 10px 12px; border: 1px solid var(--hf-secondary-border); border-radius: var(--radius); display: flex; justify-content: space-between; align-items: center; font-size: 13px; cursor: pointer; }
+.issuer small { display: block; color: var(--hf-text-secondary); font-size: 11px; }
+.nav-group { padding: 8px 12px; }
+.nav-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: var(--hf-text-secondary); padding: 8px 8px 6px; }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 6px; color: var(--hf-text-grey); cursor: pointer; font-weight: 500; }
+.nav-item:hover { background: var(--hf-grey); }
+.nav-item.active { background: var(--hf-label-bg); color: var(--hf-btn-blue); }
+.nav-sub { padding-left: 30px; }
+.nav-sub .nav-item { font-weight: 400; font-size: 13px; padding: 6px 10px; }
+.nav-item svg { width: 18px; height: 18px; flex-shrink: 0; }
+.sidebar-foot { margin-top: auto; padding: 16px; border-top: 1px solid var(--hf-card-border); display: flex; gap: 10px; align-items: center; }
+.avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--hf-label-bg); color: var(--hf-btn-blue); display: grid; place-items: center; font-weight: 600; font-size: 12px; }
+.main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.topbar { height: 60px; background: var(--hf-white); border-bottom: 1px solid var(--hf-card-border); display: flex; align-items: center; justify-content: space-between; padding: 0 28px; position: sticky; top: 0; z-index: 20; gap: 12px; }
+.crumbs { color: var(--hf-text-secondary); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.crumbs a:hover { color: var(--hf-btn-blue); }
+.crumbs b { color: var(--hf-text-quaternary); font-weight: 600; }
+.topbar-actions { display: flex; gap: 8px; align-items: center; }
+.content { padding: 24px 28px 64px; }
+
+.page-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
+.page-head h1 { margin: 0 0 4px; font-size: 22px; color: var(--hf-text-quaternary); font-weight: 600; }
+.page-head p { margin: 0; color: var(--hf-text-secondary); }
+
+/* ---------- Buttons ---------- */
+.btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: var(--radius); border: 1px solid var(--hf-secondary-border); background: var(--hf-white); cursor: pointer; font-weight: 500; white-space: nowrap; }
+.btn:hover:not(:disabled) { background: var(--hf-grey); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn-primary { background: var(--hf-btn-blue); border-color: var(--hf-btn-blue); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: #0857cc; }
+.btn-primary:disabled { background: #84adf0; border-color: #84adf0; opacity: 1; }
+.btn-link { border: none; background: none; color: var(--hf-btn-blue); padding: 8px 6px; }
+.btn-link:hover:not(:disabled) { background: none; text-decoration: underline; }
+.btn-sm { padding: 5px 10px; font-size: 13px; }
+.btn svg { width: 16px; height: 16px; }
+.pill-count { background: var(--hf-btn-blue); color: #fff; border-radius: 10px; font-size: 11px; padding: 1px 7px; font-weight: 600; }
+.spinner { width: 14px; height: 14px; border: 2px solid rgba(255,255,255,.45); border-top-color: #fff; border-radius: 50%; animation: spin .8s linear infinite; display: inline-block; }
+.spinner.dark { border-color: var(--hf-label-bg); border-top-color: var(--hf-btn-blue); }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ---------- KPI cards ---------- */
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px; margin-bottom: 20px; }
+.kpi { background: var(--hf-white); border: 1px solid var(--hf-card-border); border-radius: 12px; padding: 16px; cursor: pointer; transition: border-color .15s; }
+.kpi:hover, .kpi.selected { border-color: var(--hf-blue-secondary); }
+.kpi-label { color: var(--hf-text-secondary); font-size: 13px; display: flex; align-items: center; gap: 6px; }
+.kpi-value { font-size: 26px; font-weight: 600; color: var(--hf-text-quaternary); margin-top: 6px; }
+.kpi-delta { font-size: 12px; margin-top: 4px; color: var(--hf-text-secondary); }
+.kpi-delta.down { color: var(--hf-red); }
+.dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+
+/* ---------- Card / filters / table ---------- */
+.card { background: var(--hf-white); border: 1px solid var(--hf-card-border); border-radius: 12px; }
+.card.clip { overflow: hidden; }
+.toolbar { display: flex; gap: 8px; padding: 14px 16px; border-bottom: 1px solid var(--hf-card-border); flex-wrap: wrap; align-items: center; }
+.toolbar-spacer { flex: 1; }
+.issuer-pick { display: inline-flex; align-items: center; gap: 6px; font-weight: 500; color: var(--hf-text-secondary); font-size: 13px; }
+.issuer-pick .select { font-weight: 600; color: var(--hf-text-quaternary); }
+.search { position: relative; flex: 1 1 220px; min-width: 200px; max-width: 340px; }
+.search input { width: 100%; padding: 8px 12px 8px 34px; border: 1px solid var(--hf-secondary-border); border-radius: var(--radius); outline: none; }
+.search input:focus, .select:focus, .input:focus { border-color: var(--hf-blue-secondary); box-shadow: 0 0 0 3px var(--hf-label-bg); outline: none; }
+.search svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 16px; color: var(--hf-text-secondary); }
+.select, .input { padding: 8px 10px; border: 1px solid var(--hf-secondary-border); border-radius: var(--radius); background: var(--hf-white); outline: none; max-width: 200px; }
+.daterange { display: inline-flex; align-items: center; gap: 4px; color: var(--hf-text-secondary); font-size: 13px; }
+.daterange .input { padding: 7px 8px; }
+.active-filters { display: flex; gap: 6px; flex-wrap: wrap; padding: 10px 16px; border-bottom: 1px solid var(--hf-card-border); font-size: 12px; color: var(--hf-text-secondary); align-items: center; }
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 14px; background: var(--hf-secondary-bg); color: var(--hf-btn-blue); font-size: 12px; font-weight: 500; border: 1px solid var(--hf-label-bg); }
+.chip button { border: none; background: none; cursor: pointer; padding: 0; color: inherit; font-size: 13px; line-height: 1; }
+.chip.grey { background: var(--hf-grey); color: var(--hf-text-grey); border-color: var(--hf-light-grey); }
+.tabs { display: flex; gap: 4px; padding: 0 16px; border-bottom: 1px solid var(--hf-card-border); overflow-x: auto; }
+.tab { padding: 12px 10px; border-bottom: 2px solid transparent; color: var(--hf-text-secondary); cursor: pointer; white-space: nowrap; font-weight: 500; background: none; border-top: none; border-left: none; border-right: none; }
+.tab.active { color: var(--hf-btn-blue); border-bottom-color: var(--hf-btn-blue); }
+.tab .count { background: var(--hf-grey); border-radius: 10px; padding: 1px 7px; font-size: 11px; margin-left: 4px; }
+.tab.active .count { background: var(--hf-label-bg); }
+
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
+th { text-align: left; font-size: 12px; font-weight: 500; color: var(--hf-text-secondary); background: var(--hf-card-bg); padding: 11px 16px; border-bottom: 1px solid var(--hf-card-border); white-space: nowrap; user-select: none; }
+th[data-sort] { cursor: pointer; }
+th .sort { opacity: .4; margin-left: 4px; }
+th.sorted .sort { opacity: 1; color: var(--hf-btn-blue); }
+td { padding: 12px 16px; border-bottom: 1px solid var(--hf-card-border); white-space: nowrap; vertical-align: top; }
+#tbody tr { cursor: pointer; }
+th.sticky, td.sticky { position: sticky; left: 0; z-index: 1; background: var(--hf-white); box-shadow: 1px 0 0 var(--hf-card-border); }
+th.sticky { background: var(--hf-card-bg); }
+#tbody tr:hover td.sticky { background: var(--hf-secondary-bg); }
+#tbody tr:hover { background: var(--hf-secondary-bg); }
+.cell-main { color: var(--hf-text-quaternary); font-weight: 500; }
+.cell-sub { color: var(--hf-text-secondary); font-size: 12px; margin-top: 2px; }
+.cell-warn { color: var(--hf-red-text); }
+.mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px; }
+a.idlink { color: var(--hf-btn-blue); }
+a.idlink:hover { text-decoration: underline; }
+.num { text-align: right; }
+
+.badge { display: inline-flex; align-items: center; gap: 6px; padding: 2px 10px; border-radius: 16px; font-size: 12px; font-weight: 500; border: 1px solid transparent; white-space: nowrap; }
+.badge .dot { width: 6px; height: 6px; }
+.b-green { background: var(--hf-green-bg); color: var(--hf-text-green); border-color: var(--hf-success-bg); } .b-green .dot { background: var(--hf-text-green); }
+.b-blue { background: var(--hf-label-bg); color: var(--hf-btn-blue); } .b-blue .dot { background: var(--hf-btn-blue); }
+.b-amber { background: var(--hf-warning-bg); color: var(--hf-amber-text); border-color: var(--hf-warning-border); } .b-amber .dot { background: #f79009; }
+.b-red { background: var(--hf-error-bg); color: var(--hf-red-text); border-color: var(--hf-error-border); } .b-red .dot { background: var(--hf-red); }
+.b-purple { background: #f4f3ff; color: #5925dc; border-color: #d9d6fe; } .b-purple .dot { background: #7a5af8; }
+.b-grey { background: var(--hf-grey); color: var(--hf-text-grey); border-color: var(--hf-light-grey); } .b-grey .dot { background: var(--hf-text-secondary); }
+.tag { display: inline-block; font-size: 10.5px; font-weight: 600; padding: 1px 6px; border-radius: 4px; letter-spacing: .02em; text-transform: uppercase; }
+.tag-pii { background: #fdf2fa; color: #c11574; }
+.tag-mis { background: var(--hf-label-bg); color: var(--hf-btn-blue); }
+.tag-derived { background: var(--hf-grey); color: var(--hf-text-grey); }
+.tag-dq { background: var(--hf-warning-bg); color: var(--hf-amber-text); }
+
+.pager { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; color: var(--hf-text-secondary); flex-wrap: wrap; gap: 10px; }
+.pager-btns { display: flex; gap: 6px; align-items: center; }
+.empty { padding: 48px; text-align: center; color: var(--hf-text-secondary); white-space: normal; }
+
+/* tooltip */
+.tip-wrap { position: relative; display: inline-flex; }
+.tip { position: absolute; right: 0; top: calc(100% + 8px); background: var(--hf-text-quaternary); color: #fff; font-size: 12px; padding: 8px 10px; border-radius: 6px; width: 240px; line-height: 1.4; opacity: 0; pointer-events: none; transition: opacity .15s; z-index: 30; }
+.tip-wrap:hover .tip:not(:empty), .tip-wrap:focus-within .tip:not(:empty) { opacity: 1; }
+
+/* ---------- Detail page ---------- */
+.detail-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; gap: 10px; flex-wrap: wrap; }
+.back { color: var(--hf-btn-blue); font-weight: 500; display: inline-flex; gap: 6px; align-items: center; }
+.back:hover { text-decoration: underline; }
+.pn { display: flex; gap: 8px; align-items: center; color: var(--hf-text-secondary); font-size: 13px; }
+.pn .btn[aria-disabled="true"] { opacity: .45; pointer-events: none; }
+.detail-head { padding: 20px 24px; display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 14px; }
+.detail-head h1 { margin: 0 0 6px; font-size: 22px; color: var(--hf-text-quaternary); font-weight: 600; }
+.detail-meta { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 10px; }
+.detail-actions { display: flex; gap: 8px; align-items: flex-start; flex-wrap: wrap; }
+.copy-btn { border: none; background: none; cursor: pointer; color: var(--hf-text-secondary); padding: 2px 4px; border-radius: 4px; font-size: 12px; }
+.copy-btn:hover { background: var(--hf-grey); color: var(--hf-btn-blue); }
+.strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 14px; }
+.stat { background: var(--hf-white); border: 1px solid var(--hf-card-border); border-radius: 12px; padding: 14px 16px; }
+.stat small { color: var(--hf-text-secondary); font-size: 12px; display: block; }
+.stat b { display: block; font-size: 20px; font-weight: 600; color: var(--hf-text-quaternary); margin-top: 4px; }
+.stat .cell-sub { margin-top: 4px; }
+.tab-body { padding: 22px 24px; min-height: 320px; }
+.section-title { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: var(--hf-text-secondary); margin: 26px 0 12px; }
+.section-title:first-child { margin-top: 0; }
+.kv { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px 24px; }
+.kv > div small { display: block; color: var(--hf-text-secondary); font-size: 12px; margin-bottom: 3px; }
+.kv > div > span { color: var(--hf-text-quaternary); font-weight: 500; word-break: break-word; }
+.blank { color: var(--hf-text-secondary); font-weight: 400 !important; font-style: italic; }
+.reveal { margin-left: 6px; font-size: 12px; color: var(--hf-btn-blue); border: none; background: none; cursor: pointer; padding: 0; font-weight: 500; }
+.reveal:hover { text-decoration: underline; }
+.note { background: var(--hf-secondary-bg); border: 1px solid var(--hf-label-bg); border-radius: 8px; padding: 10px 12px; font-size: 13px; color: var(--hf-text-grey); margin-top: 16px; line-height: 1.5; }
+.note.warn { background: #fffaeb; border-color: var(--hf-warning-bg); }
+.timeline { list-style: none; margin: 0; padding: 0; max-width: 720px; }
+.timeline li { display: flex; gap: 12px; padding-bottom: 18px; position: relative; }
+.timeline li:not(:last-child)::before { content: ""; position: absolute; left: 11px; top: 26px; bottom: 2px; width: 2px; background: var(--hf-card-border); }
+.t-icon { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; font-size: 12px; font-weight: 700; }
+.t-done { background: var(--hf-success-bg); color: var(--hf-text-green); }
+.t-current { background: var(--hf-label-bg); color: var(--hf-btn-blue); box-shadow: 0 0 0 3px var(--hf-secondary-bg); }
+.t-fail { background: var(--hf-error-bg); color: var(--hf-red-text); }
+.t-pending { background: var(--hf-grey); color: var(--hf-text-secondary); }
+.t-title { font-weight: 500; color: var(--hf-text-quaternary); }
+.t-meta { font-size: 12px; color: var(--hf-text-secondary); margin-top: 2px; }
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.subcard { border: 1px solid var(--hf-card-border); border-radius: 10px; padding: 16px; }
+.subcard h3 { margin: 0 0 12px; font-size: 15px; color: var(--hf-text-quaternary); display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.bar { height: 8px; background: var(--hf-grey); border-radius: 4px; overflow: hidden; margin-top: 8px; }
+.bar > span { display: block; height: 100%; background: var(--hf-btn-blue); }
+.skeleton { background: linear-gradient(90deg, var(--hf-grey) 25%, #ececec 37%, var(--hf-grey) 63%); background-size: 400% 100%; animation: sk 1.2s ease infinite; border-radius: 6px; height: 14px; margin-bottom: 12px; }
+@keyframes sk { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
+
+/* ---------- Drawer (Exports centre) ---------- */
+.overlay { position: fixed; inset: 0; background: rgba(16,24,40,.35); opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 40; }
+.overlay.open { opacity: 1; pointer-events: auto; }
+.drawer { position: fixed; top: 0; right: 0; height: 100vh; width: min(480px, 100vw); background: var(--hf-white); transform: translateX(100%); transition: transform .25s ease; z-index: 50; display: flex; flex-direction: column; box-shadow: -8px 0 24px rgba(16,24,40,.08); }
+.drawer.open { transform: none; }
+.drawer-head { padding: 18px 22px; border-bottom: 1px solid var(--hf-card-border); display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+.drawer-head h2 { margin: 0 0 4px; font-size: 17px; color: var(--hf-text-quaternary); }
+.drawer-body { padding: 14px 22px; overflow-y: auto; flex: 1; }
+.drawer-foot { padding: 12px 22px; border-top: 1px solid var(--hf-card-border); font-size: 12px; color: var(--hf-text-secondary); line-height: 1.5; }
+.icon-btn { border: none; background: none; cursor: pointer; padding: 6px; border-radius: 6px; color: var(--hf-text-secondary); font-size: 15px; }
+.icon-btn:hover { background: var(--hf-grey); }
+.job { border: 1px solid var(--hf-card-border); border-radius: 10px; padding: 14px; margin-bottom: 10px; }
+.job-top { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
+.job-name { font-weight: 600; color: var(--hf-text-quaternary); word-break: break-all; font-size: 13px; }
+.job-meta { font-size: 12px; color: var(--hf-text-secondary); margin-top: 6px; line-height: 1.6; }
+.job-actions { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+.job-err { font-size: 12px; color: var(--hf-red-text); margin-top: 6px; }
+
+/* ---------- Modal (export dialog) ---------- */
+.modal-backdrop { position: fixed; inset: 0; background: rgba(16,24,40,.45); z-index: 70; display: grid; place-items: center; padding: 16px; }
+.modal { background: var(--hf-white); border-radius: 14px; width: min(1060px, 100%); max-height: calc(100vh - 32px); display: flex; flex-direction: column; box-shadow: 0 20px 48px rgba(16,24,40,.22); }
+.modal-head { padding: 18px 22px; border-bottom: 1px solid var(--hf-card-border); display: flex; justify-content: space-between; gap: 12px; }
+.modal-head h2 { margin: 0 0 4px; font-size: 18px; color: var(--hf-text-quaternary); }
+.modal-body { overflow-y: auto; padding: 18px 22px; display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 20px; }
+.modal-foot { padding: 14px 22px; border-top: 1px solid var(--hf-card-border); display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.picker { border: 1px solid var(--hf-card-border); border-radius: 10px; max-height: 380px; overflow-y: auto; }
+.picker-tools { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+.picker-tools .input { flex: 1; max-width: none; }
+.pgroup { border-bottom: 1px solid var(--hf-card-border); }
+.pgroup:last-child { border-bottom: none; }
+.pgroup-head { display: flex; align-items: center; gap: 8px; padding: 9px 12px; background: var(--hf-card-bg); font-weight: 600; font-size: 12.5px; color: var(--hf-text-grey); position: sticky; top: 0; z-index: 1; }
+.pgroup-head .cnt { margin-left: auto; font-weight: 500; color: var(--hf-text-secondary); font-size: 12px; }
+.prow { display: flex; align-items: flex-start; gap: 9px; padding: 8px 12px; cursor: pointer; }
+.prow:hover { background: var(--hf-secondary-bg); }
+.prow input { margin-top: 3px; }
+.prow .pl { flex: 1; min-width: 0; }
+.prow .pl div:first-child { color: var(--hf-text-quaternary); font-weight: 500; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.prow .pl .fmt { font-size: 11.5px; color: var(--hf-text-secondary); margin-top: 1px; }
+.sel-list { list-style: none; margin: 0; padding: 0; border: 1px solid var(--hf-card-border); border-radius: 10px; max-height: 250px; overflow-y: auto; }
+.sel-list li { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border-bottom: 1px solid var(--hf-card-border); background: var(--hf-white); font-size: 13px; }
+.sel-list li:last-child { border-bottom: none; }
+.sel-list li.drag-over { box-shadow: inset 0 2px 0 var(--hf-btn-blue); }
+.sel-list li.dragging { opacity: .4; }
+.sel-list .grip { cursor: grab; color: var(--hf-text-secondary); user-select: none; letter-spacing: -2px; }
+.sel-list .idx { width: 22px; color: var(--hf-text-secondary); font-size: 12px; text-align: right; }
+.sel-list .nm { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sel-list .hdr { font-size: 11px; color: var(--hf-text-secondary); }
+.mini { border: none; background: none; cursor: pointer; color: var(--hf-text-secondary); padding: 2px 5px; border-radius: 4px; font-size: 13px; }
+.mini:hover:not(:disabled) { background: var(--hf-grey); color: var(--hf-text-quaternary); }
+.mini:disabled { opacity: .3; cursor: default; }
+.opts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px; margin-top: 14px; }
+.opt label { display: block; font-size: 12px; color: var(--hf-text-secondary); margin-bottom: 4px; font-weight: 500; }
+.opt .select { width: 100%; max-width: none; }
+.check { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; cursor: pointer; }
+.check input { margin-top: 3px; }
+.check small { display: block; color: var(--hf-text-secondary); font-size: 12px; }
+.summary { background: var(--hf-card-bg); border: 1px solid var(--hf-card-border); border-radius: 10px; padding: 12px 14px; margin-top: 14px; font-size: 13px; line-height: 1.6; }
+.summary .row { display: flex; justify-content: space-between; gap: 10px; }
+.summary .row span:first-child { color: var(--hf-text-secondary); }
+.summary .row span:last-child { text-align: right; color: var(--hf-text-quaternary); font-weight: 500; word-break: break-all; }
+.err { background: var(--hf-error-bg); border: 1px solid var(--hf-error-border); color: var(--hf-red-text); border-radius: 8px; padding: 10px 12px; font-size: 13px; margin-top: 12px; }
+.preview-wrap { margin-top: 12px; border: 1px solid var(--hf-card-border); border-radius: 8px; overflow: auto; max-height: 220px; }
+.preview-wrap table { font-size: 12px; }
+.preview-wrap th, .preview-wrap td { padding: 6px 10px; }
+
+/* ---------- Toasts ---------- */
+.toasts { position: fixed; bottom: 20px; right: 20px; display: flex; flex-direction: column; gap: 8px; z-index: 90; max-width: min(400px, calc(100vw - 32px)); }
+.toast { background: var(--hf-text-quaternary); color: #fff; padding: 11px 14px; border-radius: 8px; display: flex; gap: 12px; align-items: center; box-shadow: 0 8px 20px rgba(16,24,40,.2); animation: tin .2s ease; font-size: 13.5px; line-height: 1.4; }
+.toast.ok { border-left: 4px solid #32d583; } .toast.bad { border-left: 4px solid var(--hf-red); } .toast.info { border-left: 4px solid var(--hf-blue-secondary); }
+.toast button { background: none; border: 1px solid rgba(255,255,255,.4); color: #fff; border-radius: 6px; padding: 4px 10px; cursor: pointer; font-weight: 500; white-space: nowrap; }
+@keyframes tin { from { transform: translateY(10px); opacity: 0; } }
+
+/* ---------- Prototype controls ---------- */
+.demo-fab { position: fixed; left: 16px; bottom: 16px; z-index: 80; background: var(--hf-blue); color: #fff; border: none; border-radius: 20px; padding: 9px 14px; cursor: pointer; font-weight: 500; box-shadow: 0 6px 16px rgba(41,44,130,.3); font-size: 13px; }
+.demo-panel { position: fixed; left: 16px; bottom: 62px; z-index: 80; width: 320px; max-width: calc(100vw - 32px); background: var(--hf-white); border: 1px solid var(--hf-secondary-border); border-radius: 12px; box-shadow: 0 16px 40px rgba(16,24,40,.18); padding: 14px 16px; max-height: calc(100vh - 90px); overflow-y: auto; }
+.demo-panel h4 { margin: 12px 0 6px; font-size: 11.5px; text-transform: uppercase; letter-spacing: .04em; color: var(--hf-text-secondary); }
+.demo-panel h4:first-child { margin-top: 0; }
+.demo-panel .check { margin-bottom: 6px; }
+.demo-panel .btn { width: 100%; justify-content: center; margin-bottom: 6px; }
+.demo-panel p { font-size: 12px; color: var(--hf-text-secondary); margin: 6px 0 0; line-height: 1.5; }
+
+/* ---------- Edit mode ---------- */
+body.editing [data-editable] { outline: 1px dashed var(--hf-blue-secondary); outline-offset: 2px; border-radius: 3px; }
+body.editing [data-editable]:focus { outline-style: solid; background: var(--hf-secondary-bg); }
+.edit-banner { display: none; background: var(--hf-blue); color: #fff; text-align: center; padding: 6px; font-size: 13px; }
+body.editing .edit-banner { display: block; }
+
+@media (max-width: 960px) {
+  .modal-body { grid-template-columns: 1fr; }
+  .two-col { grid-template-columns: 1fr; }
+}
+@media (max-width: 860px) {
+  .sidebar { display: none; }
+  .content { padding: 16px; }
+  .topbar { padding: 0 16px; }
+  .topbar-actions .hide-sm { display: none; }
+  .opts { grid-template-columns: 1fr; }
+  .search { max-width: none; }
+  .tab-body { padding: 16px; }
+}
+</style>
+</head>
+<body>
+<div class="edit-banner">Edit mode is on. Click any dashed text to change it, then click "Done editing".</div>
+
+<div class="app">
+  <!-- ===================== SIDEBAR ===================== -->
+  <aside class="sidebar">
+    <div class="brand"><div class="brand-logo">IB</div><div class="brand-name" data-editable>Iron Bank</div></div>
+    <div class="issuer" id="sideIssuer" title="Change issuer">
+      <div><small>Issuer</small><span id="sideIssuerName">SSFB</span></div><span>▾</span>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label" data-editable>Product Setup</div>
+      <a class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg><span data-editable>Programs</span></a>
+      <a class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12h16M4 6h16M4 18h10"/></svg><span data-editable>Onboarding Journeys</span></a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label" data-editable>Operations</div>
+      <a class="nav-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg><span data-editable>OnboardIQ</span></a>
+      <div class="nav-sub">
+        <a class="nav-item active" href="#/applications"><span data-editable>Applications</span></a>
+        <a class="nav-item"><span data-editable>Manual Review Queue</span></a>
+        <a class="nav-item"><span data-editable>Drop-off Recovery</span></a>
+      </div>
+      <a class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg><span data-editable>Card Management</span></a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label" data-editable>Insights Center</div>
+      <a class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg><span data-editable>OnboardIQ Analytics</span></a>
+    </div>
+    <div class="sidebar-foot">
+      <div class="avatar">OU</div>
+      <div><div data-editable style="font-weight:500">Ops User</div><div class="cell-sub" data-editable>ops@ironbank.co</div></div>
+    </div>
+  </aside>
+
+  <!-- ===================== MAIN ===================== -->
+  <div class="main">
+    <header class="topbar">
+      <div class="crumbs" id="crumbs"></div>
+      <div class="topbar-actions">
+        <a class="btn hide-sm" id="prdLink" target="_blank" rel="noopener" href="https://claude.ai/code/artifact/fdc79f55-1bca-4ca7-ba10-f520d25d4bf1">PRD ↗</a>
+        <button class="btn" id="exportsBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>Export logs <span class="pill-count" id="exportsCount" hidden></span></button>
+        <button class="btn hide-sm" id="editToggle">✎ Edit text</button>
+      </div>
+    </header>
+
+    <main class="content">
+      <!-- ============ LIST VIEW ============ -->
+      <section id="listView">
+        <div class="page-head">
+          <div>
+            <h1 data-editable>Applications</h1>
+            <p data-editable>Every merchant credit-line application for the selected issuer. Click a row to open the full applicant page.</p>
+          </div>
+        </div>
+        <section class="kpis" id="kpis"></section>
+        <section class="card">
+          <div class="tabs" id="tabs"></div>
+          <div class="toolbar">
+            <label class="issuer-pick">Issuer: <select class="select" id="issuerSel"></select></label>
+            <div class="search">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+              <input id="search" placeholder="Search applicant ID, name, mobile, external / bank ID" />
+            </div>
+            <select class="select" id="fCh"></select>
+            <select class="select" id="fStep"></select>
+            <span class="daterange" title="Request date (IST)"><input class="input" type="date" id="fFrom" aria-label="Request date from" />–<input class="input" type="date" id="fTo" aria-label="Request date to" /></span>
+            <button class="btn btn-link" id="resetBtn">Reset</button>
+            <span class="toolbar-spacer"></span>
+            <span class="tip-wrap" id="exportWrap">
+              <button class="btn btn-primary" id="exportBtn"></button>
+              <span class="tip" id="exportTip"></span>
+            </span>
+          </div>
+          <div class="active-filters" id="activeFilters" hidden></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr id="thead"></tr></thead>
+              <tbody id="tbody"></tbody>
+            </table>
+          </div>
+          <div class="pager">
+            <span id="pageInfo"></span>
+            <div class="pager-btns">
+              <select class="select" id="pageSize"><option>25</option><option>50</option><option>100</option></select>
+              <button class="btn" id="prevBtn">‹ Prev</button>
+              <span id="pageNum" style="min-width:70px;text-align:center"></span>
+              <button class="btn" id="nextBtn">Next ›</button>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <!-- ============ APPLICANT PAGE ============ -->
+      <section id="detailView" hidden></section>
+    </main>
+  </div>
+</div>
+
+<!-- ===================== EXPORTS CENTRE ===================== -->
+<div class="overlay" id="overlay"></div>
+<aside class="drawer" id="centre" aria-hidden="true" aria-label="Exports">
+  <div class="drawer-head">
+    <div><h2 data-editable>Export logs</h2><div class="cell-sub">Your exports from the last 30 days. Completed files can be downloaded for 24 hours.</div></div>
+    <button class="icon-btn" id="closeCentre" aria-label="Close">✕</button>
+  </div>
+  <div class="drawer-body" id="centreBody"></div>
+  <div class="drawer-foot" data-editable>Each file downloads automatically when ready and stays available here for 24 hours, then it is deleted. Every download uses a fresh link valid for 5 minutes and is recorded for audit. PII is always masked.</div>
+</aside>
+
+<div id="modalRoot"></div>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<button class="demo-fab" id="demoBtn">⚙ Prototype controls</button>
+<div class="demo-panel" id="demoPanel" hidden>
+  <h4>Permissions</h4>
+  <p style="margin:0 0 6px">Phase 1: every dashboard user can export, and PII is always masked. Role-based permissions are phase 2.</p>
+  <h4>Simulate</h4>
+  <label class="check"><input type="checkbox" id="dLarge" /> <span>Large dataset (row count ×70)<small>Triggers the 1,00,000-row limit unless you filter down</small></span></label>
+  <label class="check"><input type="checkbox" id="dBlock" /> <span>Browser blocks automatic download<small>Shows the one-click fallback; file is still in Export logs</small></span></label>
+  <label class="check"><input type="checkbox" id="dFail" /> <span>Next export fails<small>Worker error part-way through</small></span></label>
+  <label class="check"><input type="checkbox" id="dSlow" /> <span>Slow processing (~25 s)<small>Time to try Cancel or the snapshot test</small></span></label>
+  <button class="btn" id="dNewApp">Add a new application now</button>
+  <button class="btn" id="dFF">Fast-forward clock 24 hours</button>
+  <button class="btn" id="dReset">Clear export history</button>
+  <p>Data is synthetic, generated in the FKW MIS schema (1,819 rows). No real applicant data is used.</p>
+</div>
+
+<script>
+/* ==================================================================
+   CONFIG — edit these to change the screen.
+   ================================================================== */
+const PRD_URL = "https://claude.ai/code/artifact/fdc79f55-1bca-4ca7-ba10-f520d25d4bf1";
+const USER = { name: "Ops User", email: "ops@ironbank.co" };
+const ISSUERS = {
+  SSFB:    { name: "SSFB", program: "FKW Quid – Merchant Credit Line", partner: "Flipkart Wholesale",
+             programId: "prg_fkw_bnpl_01", programType: "Business", product: "BNPL credit line",
+             journeys: { API: "jny_fkw_api_v3", PWA: "jny_fkw_pwa_v2" } },
+  SANDBOX: { name: "Sandbox Issuer", program: "Demo secured card", partner: "—",
+             programId: "prg_demo_secured_card", programType: "Individual", product: "Secured credit card",
+             journeys: { API: "jny_demo_api", PWA: "jny_demo_pwa" } },
+};
+
+// Application status — DB application_status (see PRD "Applications table")
+const STATUSES = {
+  "Initiated":             { cls: "b-grey",   color: "#667085", desc: "Application created; first journey step not completed yet" },
+  "In progress":           { cls: "b-blue",   color: "#0a66ef", desc: "Applicant is moving through the journey" },
+  "Rejected":              { cls: "b-red",    color: "#f04437", desc: "Closed as rejected (credit, KYC or ops decision)" },
+  "Credit product issued": { cls: "b-green",  color: "#039754", desc: "Card / credit line issued; approved credit limit set" },
+};
+const OPEN_STATUSES = ["Initiated", "In progress"];
+const LIMITS = { maxRows: 100000, perDay: 20, retentionMs: 24 * 3600e3, logDays: 30 };
+
+// Onboarding steps, in journey order
+const STEPS = [
+  "Mobile OTP", "Basic details", "PAN verification", "Personal details", "Aadhaar eKYC",
+  "Documents (photo, shop, GST)", "Manual verification", "Credit decision", "Application submission",
+  "Agreement eSign", "eNACH mandate", "Application completion",
+];
+// current_step_stuck codes seen in the MIS: [code, weight, step index, state, readable label]
+const STUCK = [
+  ["EKYC_IN_PROGRESS", 71, 4, "progress", "Aadhaar eKYC in progress"],
+  ["MANUAL_VERIFICATION_IN_PROGRESS", 54, 6, "progress", "Manual verification in progress"],
+  ["APPLICATION_IN_PROGRESS", 41, 1, "progress", "Started, basic details pending"],
+  ["DOCUMENT_UPLOAD_SUCCESS", 33, 5, "success", "Documents uploaded, awaiting review"],
+  ["BASIC_DETAILS_SUBMITTED", 28, 1, "success", "Basic details submitted"],
+  ["MOBILE_OTP_VERIFICATION_SUCCESS", 15, 0, "success", "Mobile verified, details not started"],
+  ["CREDIT_DECISION_SUCCESS", 11, 7, "success", "Credit approved, submission pending"],
+  ["BASIC_DETAILS_SUBMISSION_FAILED", 11, 1, "failed", "Basic details submission failed"],
+  ["EKYC_SUCCESS", 11, 4, "success", "eKYC done, documents pending"],
+  ["PAN_VERIFICATION_FAILURE", 9, 2, "failed", "PAN verification failed"],
+  ["ESIGN_IN_PROGRESS", 7, 9, "progress", "Agreement eSign in progress"],
+  ["ENACH_IN_PROGRESS", 7, 10, "progress", "eNACH mandate in progress"],
+  ["DOCUMENT_UPLOAD_FAILURE", 6, 5, "failed", "Document upload failed"],
+  ["PERSONAL_DETAILS_PAGE_IN_PROGRESS", 3, 3, "progress", "Personal details in progress"],
+  ["APPLICATION_COMPLETION_IN_PROGRESS", 3, 11, "progress", "Completion in progress"],
+  ["EKYC_PENDING", 2, 4, "pending", "eKYC pending"],
+  ["APPLICATION_SUBMISSION_SUCCESS", 1, 8, "success", "Submitted, eSign not started"],
+  ["APPLICATION_SUBMISSION_FAILED", 1, 8, "failed", "Application submission failed"],
+];
+const STUCK_BY_CODE = Object.fromEntries(STUCK.map(s => [s[0], s]));
+// Terminal sub-status codes
+const REJECT_CODES = [["CREDIT_DECISION_REJECTED", "Rejected at credit decision"], ["KYC_REJECTED", "Rejected at KYC"], ["MANUAL_VERIFICATION_REJECTED", "Rejected at manual verification"]];
+const SUB_LABELS = { ...Object.fromEntries(STUCK.map(s => [s[0], s[4]])), ...Object.fromEntries(REJECT_CODES), HF_ACCOUNT_CREATION_SUCCESS: "HF account created" };
+const STALE_DAYS = 7;
+
+/* ==================================================================
+   EXPORT COLUMN REGISTRY — mirrors the PRD "Export column catalogue".
+   In production this list comes from the server (GET /exports/columns).
+   type: text | date | datetime | int | inr | pct     pii: phone | pan | name
+   mis: header used in today's FKW MIS file
+   ================================================================== */
+const col = (group, label, key, type, get, o = {}) => ({ group, label, key, type, get, applies: "All", ...o });
+const NA = () => null;   // field not stored for this program in the demo data
+const COLS = [
+  col("Identifiers", "Applicant ID", "applicant_id", "text", a => a.applicant_id, { mis: "application_id", table: true }),
+  col("Identifiers", "External Applicant ID", "external_applicant_id", "text", a => a.external_applicant_id, { mis: "flipkart_member_id", table: true, fmt: "Client's ID for the applicant (Flipkart member ID for FKW)" }),
+  col("Identifiers", "Bank Customer ID", "bank_customer_id", "text", a => a.bank_customer_id, { table: true, fmt: "Issuer's ID for the applicant; blank until created" }),
+  col("Identifiers", "Program ID", "program_id", "text", a => a.program_id, { table: true }),
+  col("Identifiers", "Onboarding Journey ID", "onboarding_journey_id", "text", a => a.onboarding_journey_id, { table: true }),
+  col("Identifiers", "HF Account ID", "hf_account_id", "text", a => a.hf_account_id, { mis: "hf_account_id", fmt: "Post-onboarding clients; blank until Credit product issued" }),
+  col("Application", "Application Status", "application_status", "text", a => a.application_status, { table: true, fmt: Object.keys(STATUSES).join(" / ") }),
+  col("Application", "Sub-status", "sub_status", "text", a => a.sub_status, { mis: "current_step_stuck", table: true, fmt: "Code, e.g. EKYC_IN_PROGRESS" }),
+  col("Application", "Current Stage", "sub_status_label", "text", a => a.sub_status_label, { table: true, derived: true, fmt: "Readable label of the sub-status" }),
+  col("Application", "Created On", "created_on", "datetime", a => a.createdAt, { mis: "request_date", table: true }),
+  col("Application", "Last Updated On", "last_updated_on", "datetime", a => a.lastActivityAt, { table: true }),
+  col("Application", "Idle For (days)", "idle_days", "int", a => OPEN_STATUSES.includes(a.application_status) ? daysSince(a.lastActivityAt) : null, { derived: true, table: true, fmt: "Blank once Rejected / Credit product issued" }),
+  col("Application", "Days to Credit Product Issued", "days_to_issue", "int", a => a.activatedAt ? Math.round((a.activatedAt - a.createdAt) / DAY) : null, { derived: true }),
+  col("Application", "Onboarding Channel", "onboarding_channel", "text", a => a.onboarding_channel, { mis: "onboarding_channel", fmt: "API / PWA" }),
+  col("Applicant", "Applicant Name", "applicant_name", "text", a => applicantName(a), { mis: "customer_name", table: true, piiShown: true, fmt: "full_name, or first + middle + last" }),
+  col("Applicant", "First Name", "first_name", "text", a => a.first_name ?? (a.full_name ? a.full_name.split(" ")[0] : null), { piiShown: true }),
+  col("Applicant", "Middle Name", "middle_name", "text", a => a.middle_name, { piiShown: true }),
+  col("Applicant", "Last Name", "last_name", "text", a => a.last_name ?? (a.full_name ? a.full_name.split(" ").slice(1).join(" ") : null), { piiShown: true }),
+  col("Applicant", "Mobile Number", "mobile_number", "text", a => fullMobile(a), { mis: "phone_number", pii: "mobile", table: true, fmt: "Masked; CSV as (+91) 98XXXXXX78" }),
+  col("Applicant", "Mobile Country Code", "mobile_country_code", "text", a => a.mobile_country_code.replace("+", ""), { fmt: "Digits only in CSV, e.g. 91" }),
+  col("Applicant", "Email Address", "email", "text", a => a.email, { pii: "email", fmt: "Masked as r***@gmail.com" }),
+  col("Applicant", "Date of Birth", "date_of_birth", "text", a => a.date_of_birth, { pii: "dob", fmt: "Masked as XX-XX-1988" }),
+  col("Applicant", "PAN", "pan", "text", a => a.pan, { pii: "pan", fmt: "Masked as ABCXX1234X" }),
+  col("Applicant", "Gender", "gender", "text", NA, { applies: "Individual", product: "cards" }),
+  col("Applicant", "Residential City", "residential_city", "text", NA, { applies: "Individual", product: "cards" }),
+  col("Applicant", "Residential State", "residential_state", "text", NA, { applies: "Individual", product: "cards" }),
+  col("Applicant", "Residential Pincode", "residential_pincode", "text", NA, { applies: "Individual", product: "cards" }),
+  col("Applicant", "Employment Type", "employment_type", "text", NA, { applies: "Individual", product: "unsecured card" }),
+  col("Applicant", "Declared Annual Income", "declared_annual_income", "inr", NA, { applies: "Individual", product: "unsecured card" }),
+  col("Business", "Business Entity Name", "business_entity_name", "text", a => a.business_entity_name, { mis: "business_entity_name", table: true, applies: "Business", product: "BNPL" }),
+  col("Business", "Business City", "business_city", "text", a => a.business_city, { mis: "business_city", applies: "Business", product: "BNPL" }),
+  col("Business", "Business State", "business_state", "text", a => a.business_state, { applies: "Business", product: "BNPL" }),
+  col("Business", "GST Status", "gst_status", "text", a => a.gst_status, { mis: "gst_status", applies: "Business", product: "BNPL", fmt: "Completed / blank" }),
+  col("KYC & documents", "Aadhaar eKYC Status", "aadhaar_kyc_status", "text", a => a.aadhaar_kyc_status, { mis: "aadhaar_kyc_status", fmt: "Completed / Pending" }),
+  col("KYC & documents", "Video KYC Status", "video_kyc_status", "text", NA, { applies: "Individual", product: "cards" }),
+  col("KYC & documents", "Applicant Photo Status", "applicant_photo_doc_status", "text", a => a.applicant_photo_doc_status, { mis: "applicant_photo_doc_status", fmt: "Approved / Rejected / blank" }),
+  col("KYC & documents", "Shop Images Status", "shop_images_doc_status", "text", a => a.shop_images_doc_status, { mis: "shop_images_doc_status", applies: "Business", product: "BNPL", fmt: "Approved / Rejected / blank" }),
+  col("Agreement & mandate", "Agreement (eSign) Status", "agreement_status", "text", a => a.agreement_status, { mis: "agreement_status", fmt: "Completed / FAILED / blank" }),
+  col("Agreement & mandate", "Mandate (eNACH) Status", "mandate_status", "text", a => a.mandate_status, { mis: "mandate_status", applies: "Business", product: "BNPL", fmt: "Completed / FAILED / blank" }),
+  col("Secured card", "FD Amount", "fd_amount", "inr", NA, { applies: "Individual", product: "secured card" }),
+  col("Secured card", "FD Account Number", "fd_account_number", "text", NA, { applies: "Individual", product: "secured card", pii: "acct", fmt: "Masked, last 4 digits" }),
+  col("Credit", "Approved Credit Limit", "approved_credit_limit", "inr", a => a.approved_credit_limit, { mis: "sanctioned_limit", fmt: "Blank until Credit product issued" }),
+  col("Credit", "Credit Product Issued On", "credit_product_issued_on", "date", a => a.activatedAt),
+  col("Credit", "Card Variant", "card_variant", "text", NA, { applies: "Individual", product: "cards" }),
+  col("Credit line (BNPL)", "Utilised Limit", "utilised_limit", "inr", a => a.utilised_limit, { mis: "utilised_limit", applies: "Business", product: "BNPL" }),
+  col("Credit line (BNPL)", "Available Balance", "available_balance", "inr", a => a.available_balance, { mis: "available_balance", applies: "Business", product: "BNPL" }),
+  col("Credit line (BNPL)", "Utilisation %", "utilisation_pct", "pct", a => a.sanctioned_limit > 0 && a.utilised_limit != null ? a.utilised_limit / a.sanctioned_limit * 100 : null, { derived: true, applies: "Business", product: "BNPL" }),
+  col("Credit line (BNPL)", "Credit Period (days)", "credit_period", "int", a => a.credit_period, { mis: "credit_period", dq: true, applies: "Business", product: "BNPL" }),
+  col("Credit line (BNPL)", "Latest Limit as per Risk Run", "latest_limit_risk_run", "inr", a => a.latest_limit_risk_run, { mis: "latest_limit_as_per_risk_run", dq: true, applies: "Business", product: "BNPL" }),
+  col("Credit line (BNPL)", "Max Limit Possible (Risk Run)", "max_limit_risk_run", "inr", a => a.max_limit_risk_run, { mis: "max_limit_possible_as_per_latest_risk_run", dq: true, applies: "Business", product: "BNPL" }),
+  col("Credit line (BNPL)", "Activation Status", "activation_status", "text", a => a.activation_status, { mis: "activation_status", applies: "Business", product: "BNPL, FKW", fmt: "Active / Pending / Inactive" }),
+  col("Credit line (BNPL)", "Date of Activation", "date_of_activation", "date", a => a.activatedAt, { mis: "date_of_activation", applies: "Business", product: "BNPL, FKW" }),
+];
+const COL = Object.fromEntries(COLS.map(c => [c.key, c]));
+// Columns offered for the selected program: "All" + the program's type (Individual / Business)
+const colsFor = issuer => COLS.filter(c => c.applies === "All" || c.applies === ISSUERS[issuer].programType);
+const groupsFor = issuer => [...new Set(colsFor(issuer).map(c => c.group))];
+// Default export selection = the Applications table columns, in table order
+const TABLE_COLS = ["applicant_id","applicant_name","business_entity_name","mobile_number","external_applicant_id","bank_customer_id","program_id","onboarding_journey_id","application_status","sub_status","sub_status_label","created_on","last_updated_on","idle_days"];
+const tableColsFor = issuer => TABLE_COLS.filter(k => colsFor(issuer).includes(COL[k]));
+
+/* ==================================================================
+   SYNTHETIC DATA — FKW MIS schema, distributions taken from the MIS sample.
+   No real names, phones or IDs.
+   ================================================================== */
+const DAY = 864e5;
+function mulberry32(a){ return function(){ a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+let R = mulberry32(20261006);
+const pick = arr => arr[Math.floor(R() * arr.length)];
+const wpick = arr => { const tot = arr.reduce((s, x) => s + x[1], 0); let r = R() * tot; for (const x of arr) { r -= x[1]; if (r <= 0) return x; } return arr[arr.length - 1]; };
+const AN = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+const rid = n => Array.from({ length: n }, () => AN[Math.floor(R() * 62)]).join("");
+const digits = n => Array.from({ length: n }, () => Math.floor(R() * 10)).join("");
+const UP = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+const upper = n => Array.from({ length: n }, () => UP[Math.floor(R() * 26)]).join("");
+
+const FIRST = ["Ravi","Srinivas","Lakshmi","Venkatesh","Suresh","Padma","Ramesh","Anil","Sai","Mahesh","Naresh","Kiran","Prasad","Rajesh","Swathi","Harish","Vijay","Madhavi","Chandra","Gopal","Raju","Sunitha","Mohan","Bhaskar","Anjali","Imran","Salma","Arif","Deepak","Pooja"];
+const LAST = ["Reddy","Rao","Naidu","Goud","Kumar","Varma","Chowdary","Yadav","Sharma","Shaik","Patel","Jain","Gupta","Mudiraj","Achari"];
+const BIZ_A = ["Sri Lakshmi","Balaji","Sai Ram","Venkateswara","Durga","Hanuman","Ganesh","Annapurna","New India","Royal","Om Sai","Siddhi Vinayak","Bismillah","Krishna","Raghavendra","Star","Jai Bhavani","Mahalakshmi"];
+const BIZ_B = ["Kirana Store","General Stores","Traders","Enterprises","Provision Store","Super Market","Agencies","Wholesale Mart","Fancy & General","Departmental Store"];
+const ODD_BIZ = ["శ్రీ లక్ష్మి కిరాణా", "श्री गणेश किराना स्टोर", "Sai Ram Traders, Wholesale", "Annapurna \"Fresh\" Mart", "+Plus General Store", "@Home Essentials", "-Mart Express"];
+const CITIES = [
+  ["Hyderabad","Telangana",30],["Medchal Malkajgiri","Telangana",9],["Hanumakonda","Telangana",6],["Chittoor","Andhra Pradesh",6],
+  ["East Godavari","Andhra Pradesh",5],["Visakhapatnam","Andhra Pradesh",6],["Indore","Madhya Pradesh",4],["Nizamabad","Telangana",4],
+  ["Kurnool","Andhra Pradesh",4],["Ranga Reddy","Telangana",5],["Warangal","Telangana",3],["Guntur","Andhra Pradesh",4],
+  ["Nellore","Andhra Pradesh",3],["Vijayawada","Andhra Pradesh",4],["Karimnagar","Telangana",3],["Bhopal","Madhya Pradesh",2],["Agra","Uttar Pradesh",2],
+];
+const NOW0 = Date.now();
+
+function makeApp(i, createdAt, forcePending){
+  const ch = R() < .77 ? "API" : "PWA";
+  const [city, state] = wpick(CITIES.map(c => [c, c[2]]))[0];
+  const first = pick(FIRST), last = pick(LAST);
+  const biz = R() < .012 ? pick(ODD_BIZ) : `${pick(BIZ_A)} ${pick(BIZ_B)}`;
+  const age = NOW0 - createdAt;
+  let act = R(); act = forcePending || age < DAY ? "Pending" : act < .81 ? "Active" : act < .98 ? "Pending" : "Inactive";
+  const a = {
+    _i: i, issuer: "SSFB",
+    application_id: "app_" + rid(16),
+    partner_member_id: "1" + digits(16),
+    hf_account_id: null,
+    onboarding_channel: ch,
+    createdAt,
+    program_name: ISSUERS.SSFB.program,
+    customer_name: `${first} ${last}`,
+    phone_number: pick(["6","7","8","9"]) + digits(9),
+    pan: upper(3) + "P" + last[0].toUpperCase() + digits(4) + upper(1),
+    business_entity_name: biz,
+    business_city: city, business_state: state,
+    activation_status: act,
+    credit_period: null, latest_limit_risk_run: null, max_limit_risk_run: null,
+    sanctioned_limit: null, utilised_limit: null, available_balance: null,
+    activatedAt: null, current_step_stuck: null, stuck: null, events: [],
+  };
+  if (act === "Pending") {
+    const s = wpick(STUCK); a.stuck = s; a.current_step_stuck = s[0]; a.current_step_label = s[4];
+    const idx = s[2], st = s[3];
+    const doneThrough = st === "success" ? idx : idx - 1; // last fully completed step
+    a.aadhaar_kyc_status = doneThrough >= 4 ? "Completed" : "Pending";
+    const docsDone = doneThrough >= 5;
+    a.applicant_photo_doc_status = docsDone ? "Approved" : (idx === 5 && st === "failed" ? "Rejected" : null);
+    a.shop_images_doc_status = docsDone ? "Approved" : null;
+    a.gst_status = docsDone && R() < .9 ? "Completed" : null;
+    a.agreement_status = doneThrough >= 9 ? "Completed" : (idx === 9 && R() < .5 ? "FAILED" : null);
+    a.mandate_status = doneThrough >= 10 ? "Completed" : (idx === 10 && R() < .6 ? "FAILED" : null);
+    a.lastActivityAt = createdAt + R() * Math.min(14 * DAY, age);
+    a.stepOrder = idx * 10 + (st === "success" ? 5 : st === "failed" ? 1 : 3);
+  } else {
+    a.aadhaar_kyc_status = "Completed";
+    a.applicant_photo_doc_status = "Approved"; a.shop_images_doc_status = R() < .95 ? "Approved" : null;
+    a.gst_status = R() < .93 ? "Completed" : null;
+    a.agreement_status = "Completed"; a.mandate_status = act === "Inactive" && R() < .4 ? "FAILED" : "Completed";
+    if (act === "Active") {
+      a.hf_account_id = "acc_hf_" + rid(19);
+      a.activatedAt = createdAt + (0.1 + R() * 0.9) * Math.min(6 * DAY, age);
+      const s = wpick([[0,25],[10000,8],[20000,10],[25000,8],[30000,15],[50000,18],[75000,6],[100000,6],[200000,2],[500000,1],[1000000,1]])[0];
+      let u = 0;
+      if (s === 0) u = R() < .04 ? -Math.round(R() * 12880 * 100) / 100 : 0;
+      else if (R() < .5) u = Math.round(R() * s * 100) / 100;
+      a.sanctioned_limit = s; a.utilised_limit = u; a.available_balance = Math.round((s - u) * 100) / 100;
+      a.lastActivityAt = a.activatedAt + R() * (NOW0 - a.activatedAt);
+      a.current_step_label = "Activated"; a.stepOrder = 1000;
+    } else {
+      a.hf_account_id = R() < .5 ? "acc_hf_" + rid(19) : null;
+      const rj = pick(REJECT_CODES); a.reject_code = rj[0]; a.inactive_reason = rj[1];
+      a.lastActivityAt = createdAt + R() * Math.min(10 * DAY, age);
+      a.current_step_label = "Inactive"; a.stepOrder = 990;
+    }
+  }
+  a.application_status = appStatus(a);
+  // ---- fields named as stored in the OnboardIQ DB ----
+  a.applicant_id = a.application_id;
+  if (R() < .3) { a.full_name = null; a.first_name = first; a.middle_name = R() < .4 ? pick(FIRST) : null; a.last_name = last; }
+  else { a.full_name = `${first} ${last}`; a.first_name = a.middle_name = a.last_name = null; }
+  a.customer_name = applicantName(a);
+  a.mobile_country_code = "+91"; a.mobile_number = a.phone_number;
+  a.email = `${first.toLowerCase()}.${last.toLowerCase()}${digits(2)}@${pick(["gmail.com", "yahoo.co.in", "outlook.com"])}`;
+  a.date_of_birth = `${1965 + Math.floor(R() * 37)}-${String(1 + Math.floor(R() * 12)).padStart(2, "0")}-${String(1 + Math.floor(R() * 28)).padStart(2, "0")}`;
+  a.external_applicant_id = a.partner_member_id;
+  a.program_id = ISSUERS.SSFB.programId;
+  a.onboarding_journey_id = ISSUERS.SSFB.journeys[ch];
+  a.bank_customer_id = act === "Active" || (act === "Pending" && a.stuck[2] >= 7) ? digits(10) : null;
+  a.sub_status = act === "Active" ? "HF_ACCOUNT_CREATION_SUCCESS" : act === "Inactive" ? a.reject_code : a.current_step_stuck;
+  a.sub_status_label = SUB_LABELS[a.sub_status];
+  a.current_step_label = a.sub_status_label;
+  a.approved_credit_limit = a.sanctioned_limit;
+  return a;
+}
+function appStatus(a){
+  if (a.activation_status === "Active") return "Credit product issued";
+  if (a.activation_status === "Inactive") return "Rejected";
+  return a.stuck[2] <= 1 ? "Initiated" : "In progress";
+}
+// full_name, or first + middle + last joined with single spaces (blank parts skipped)
+function applicantName(a){ return a.full_name || [a.first_name, a.middle_name, a.last_name].filter(Boolean).join(" "); }
+const DATA = { SSFB: [], SANDBOX: [] };
+(function seed(){
+  const start = NOW0 - 106 * DAY;
+  for (let i = 0; i < 1819; i++) DATA.SSFB.push(makeApp(i, start + R() * (NOW0 - start - 2 * 3600e3)));
+  DATA.SSFB.sort((x, y) => y.createdAt - x.createdAt);
+})();
+const byId = id => DATA.SSFB.find(a => a.application_id === id) || DATA.SANDBOX.find(a => a.application_id === id);
+
+/* ==================================================================
+   HELPERS
+   ================================================================== */
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const nf = n => Number(n).toLocaleString("en-IN");
+const inr = n => n == null ? null : "₹" + Number(n).toLocaleString("en-IN", { maximumFractionDigits: 2 });
+let clockOffset = 0;
+const now = () => Date.now() + clockOffset;
+const daysSince = t => t == null ? null : Math.max(0, Math.floor((now() - t) / DAY));
+const IST = "Asia/Kolkata";
+const DTF = new Intl.DateTimeFormat("en-GB", { timeZone: IST, year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
+function ist(t){ const o = {}; DTF.formatToParts(new Date(t)).forEach(p => o[p.type] = p.value); if (o.hour === "24") o.hour = "00"; return o; }
+const isoDate = t => { const o = ist(t); return `${o.year}-${o.month}-${o.day}`; };
+const dmyDate = t => { const o = ist(t); return `${o.day}-${o.month}-${o.year}`; };
+const isoDT = t => { const o = ist(t); return `${o.year}-${o.month}-${o.day}T${o.hour}:${o.minute}:${o.second}+05:30`; };
+const hhmm = t => { const o = ist(t); return o.hour + o.minute; };
+const showDate = t => t == null ? null : new Date(t).toLocaleDateString("en-IN", { timeZone: IST, day: "2-digit", month: "short", year: "numeric" });
+const showDT = t => t == null ? null : new Date(t).toLocaleString("en-IN", { timeZone: IST, day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+const showTime = t => new Date(t).toLocaleTimeString("en-IN", { timeZone: IST, hour: "2-digit", minute: "2-digit" });
+function ago(t){ const m = (now() - t) / 60000; if (m < 1) return "just now"; if (m < 60) return Math.floor(m) + " min ago"; const h = m / 60; if (h < 24) return Math.floor(h) + " h ago"; return Math.floor(h / 24) + " d ago"; }
+function left(t){ const m = (t - now()) / 60000; if (m <= 0) return "expired"; if (m < 60) return Math.ceil(m) + " min left"; return Math.floor(m / 60) + " h " + Math.floor(m % 60) + " min left"; }
+// PII is ALWAYS masked in phase 1 (no unmask option or permission)
+const MASK = {
+  phone: v => v.length >= 4 ? v.slice(0, 2) + "X".repeat(v.length - 4) + v.slice(-2) : v,
+  mobile: v => { const [cc, n] = v.split(" "); return cc + " " + MASK.phone(n); },
+  pan: v => v.length === 10 ? v.slice(0, 3) + "XX" + v.slice(5) : v,
+  email: v => { const [u, d] = v.split("@"); return u[0] + "***@" + d; },
+  dob: v => "XX-XX-" + v.slice(0, 4),
+  acct: v => "XXXX" + v.slice(-4),
+};
+const fullMobile = a => a.mobile_country_code + " " + a.mobile_number;
+const perms = { export: true };
+const demo = { large: false, fail: false, slow: false, blocked: false };
+
+/* ==================================================================
+   ROUTING  —  #/applications?…   and   #/applications/{id}?…
+   List state lives in the query string so Back keeps filters, tab, sort and page.
+   ================================================================== */
+const DEFAULT_Q = { issuer: "SSFB", tab: "ALL", q: "", ch: "", kyc: "", step: "", city: "", from: "", to: "", sort: "created", dir: "-1", page: "1", size: "25" };
+let Q = { ...DEFAULT_Q };
+let listScroll = 0, lastRoute = "list";
+function qs(q = Q){ const p = new URLSearchParams(); for (const k in q) if (q[k] !== DEFAULT_Q[k]) p.set(k, q[k]); const s = p.toString(); return s ? "?" + s : ""; }
+// In-page router. The current route is kept in memory, so navigation works even where the
+// page runs in a sandboxed frame (file previews) that blocks hash links or the History API.
+let currentHash = (() => { try { return location.hash || "#/applications"; } catch (e) { return "#/applications"; } })();
+function syncUrl(hash, push){ try { push ? history.pushState(null, "", hash) : history.replaceState(null, "", hash); } catch (e) { /* sandboxed: keep in-memory route only */ } }
+function navigate(hash, push = true){ currentHash = hash; syncUrl(hash, push); route(); }
+function parseHash(){
+  const h = currentHash.replace(/^#/, "") || "/applications";
+  const [path, query] = h.split("?");
+  const p = new URLSearchParams(query || "");
+  Q = { ...DEFAULT_Q }; for (const k in DEFAULT_Q) if (p.has(k)) Q[k] = p.get(k);
+  if (!ISSUERS[Q.issuer]) Q.issuer = "SSFB";
+  const m = path.match(/^\/applications\/([^/]+)$/);
+  return m ? { name: "detail", id: decodeURIComponent(m[1]) } : { name: "list" };
+}
+const listHref = () => "#/applications" + qs();
+const detailHref = id => "#/applications/" + encodeURIComponent(id) + qs();
+function setQ(patch, resetPage = true){
+  Object.assign(Q, patch); if (resetPage && !("page" in patch)) Q.page = "1";
+  currentHash = listHref(); syncUrl(currentHash, false);
+  renderList();
+}
+
+/* ==================================================================
+   LIST
+   ================================================================== */
+function isStale(a){ return OPEN_STATUSES.includes(a.application_status) && daysSince(a.lastActivityAt) > STALE_DAYS; }
+function matches(a, q, ignoreTab){
+  if (!ignoreTab && q.tab !== "ALL" && a.application_status !== q.tab) return false;
+  if (q.ch && a.program_id !== q.ch) return false;                                   // Program filter
+  if (q.step && (q.step === "STALE" ? !isStale(a) : a.sub_status !== q.step)) return false; // Sub-status filter
+  if (q.from && isoDate(a.createdAt) < q.from) return false;
+  if (q.to && isoDate(a.createdAt) > q.to) return false;
+  if (q.q) {
+    const s = q.q.trim().toLowerCase();
+    if (s && ![a.applicant_id, applicantName(a), a.mobile_number, a.business_entity_name, a.external_applicant_id, a.bank_customer_id].some(v => v && v.toLowerCase().includes(s))) return false;
+  }
+  return true;
+}
+const idleMs = a => OPEN_STATUSES.includes(a.application_status) ? now() - a.lastActivityAt : -1;
+// Only these columns are sortable (IDs, names and mobile are not — see PRD)
+const SORTS = {
+  status: a => Object.keys(STATUSES).indexOf(a.application_status), sub: a => a.stepOrder,
+  created: a => a.createdAt, last: a => a.lastActivityAt, idle: idleMs,
+};
+function filtered(q = Q, ignoreTab = false){
+  const rows = DATA[q.issuer].filter(a => matches(a, q, ignoreTab));
+  const f = SORTS[q.sort] || SORTS.created, d = Number(q.dir) || -1;
+  return rows.sort((x, y) => { const a = f(x), b = f(y); return (a > b ? 1 : a < b ? -1 : 0) * d; });
+}
+function statusBadgeApp(s){ return `<span class="badge ${STATUSES[s].cls}" title="${esc(STATUSES[s].desc)}"><span class="dot"></span>${s}</span>`; }
+function dur(ms){ const m = ms / 60000; if (m < 60) return Math.max(1, Math.floor(m)) + " min"; const h = m / 60; if (h < 24) return Math.floor(h) + " h"; const d = Math.floor(h / 24); return d + " d" + (d < 3 ? " " + Math.floor(h % 24) + " h" : ""); }
+const isFailedSub = a => /FAIL|REJECT/.test(a.sub_status || "");
+const blankCell = `<span class="cell-sub">—</span>`;
+const TABLE = [
+  { id: "app", label: "Applicant ID", sticky: true, nosort: true, r: a => `<a class="idlink mono" href="${detailHref(a.applicant_id)}">${a.applicant_id}</a>` },
+  { id: "name", label: "Applicant name", nosort: true, r: a => `<div class="cell-main">${esc(applicantName(a))}</div>${ISSUERS[a.issuer].programType === "Business" ? `<div class="cell-sub">${esc(a.business_entity_name)}</div>` : ""}` },
+  { id: "mobile", label: "Mobile number", nosort: true, r: a => `<span class="mono">${esc(MASK.mobile(fullMobile(a)))}</span>` },
+  { id: "ext", label: "External applicant ID", nosort: true, r: a => `<span class="mono">${a.external_applicant_id}</span>` },
+  { id: "bank", label: "Bank customer ID", nosort: true, r: a => a.bank_customer_id ? `<span class="mono">${a.bank_customer_id}</span>` : blankCell },
+  { id: "prog", label: "Program ID", nosort: true, r: a => `<span class="mono">${a.program_id}</span>` },
+  { id: "journey", label: "Onboarding journey ID", nosort: true, r: a => `<span class="mono">${a.onboarding_journey_id}</span>` },
+  { id: "status", label: "Application status", r: a => statusBadgeApp(a.application_status) },
+  { id: "sub", label: "Sub-status (current stage)", r: a => `<div class="${isFailedSub(a) ? "cell-warn" : ""}">${esc(a.sub_status_label)}</div><div class="cell-sub mono" style="font-size:11px">${a.sub_status}</div>` },
+  { id: "created", label: "Created on", r: a => `${showDate(a.createdAt)}<div class="cell-sub">${showTime(a.createdAt)}</div>` },
+  { id: "last", label: "Last updated on", r: a => `${showDate(a.lastActivityAt)}<div class="cell-sub">${showTime(a.lastActivityAt)}</div>` },
+  { id: "idle", label: "Idle for", r: a => { const ms = idleMs(a); return ms < 0 ? blankCell : `<span class="${ms > STALE_DAYS * DAY ? "cell-warn" : ""}">${dur(ms)}</span>`; } },
+];
+
+function renderKpis(){
+  const base = filtered(Q, true);
+  const n = s => base.filter(a => a.application_status === s).length;
+  const stale = base.filter(isStale).length;
+  const act = n("Credit product issued");
+  const cards = [
+    { tab: "ALL", label: "Total applications", value: base.length, sub: "Matching current filters" },
+    { tab: "Credit product issued", label: "Credit product issued", color: STATUSES["Credit product issued"].color, value: act, sub: base.length ? `${(act / base.length * 100).toFixed(1)}% issue rate` : "—" },
+    { tab: "In progress", label: "In progress", color: STATUSES["In progress"].color, value: n("In progress"), sub: "Moving through the journey" },
+    { tab: "Initiated", label: "Initiated", color: STATUSES.Initiated.color, value: n("Initiated"), sub: "First step not completed" },
+    { tab: "Rejected", label: "Rejected", color: STATUSES.Rejected.color, value: n("Rejected"), sub: "Credit, KYC or ops decision", down: true },
+    { step: "STALE", label: `Idle > ${STALE_DAYS} days`, color: "#f79009", value: stale, sub: "Open, needs follow-up", down: true },
+  ];
+  $("kpis").innerHTML = cards.map(c => {
+    const sel = c.tab ? Q.tab === c.tab && Q.step !== "STALE" : Q.step === "STALE";
+    return `<div class="kpi ${sel ? "selected" : ""}" ${c.tab ? `data-kpitab="${c.tab}"` : `data-kpistep="${c.step}"`} role="button" tabindex="0">
+      <div class="kpi-label">${c.color ? `<span class="dot" style="background:${c.color}"></span>` : ""}<span data-editable>${c.label}</span></div>
+      <div class="kpi-value">${nf(c.value)}</div><div class="kpi-delta ${c.down ? "down" : ""}">${c.sub}</div></div>`;
+  }).join("");
+  const tabs = [["ALL", "All"], ...Object.keys(STATUSES).map(k => [k, k])];
+  $("tabs").innerHTML = tabs.map(([k, l]) => `<button class="tab ${Q.tab === k ? "active" : ""}" data-tab="${k}">${l}<span class="count">${nf(k === "ALL" ? base.length : n(k))}</span></button>`).join("");
+}
+function filterText(q = Q){
+  const parts = [];
+  if (q.tab !== "ALL") parts.push(["tab", "Status: " + q.tab]);
+  if (q.q) parts.push(["q", `Search: "${q.q}"`]);
+  if (q.ch) parts.push(["ch", "Program: " + q.ch]);
+  if (q.step) parts.push(["step", "Sub-status: " + (q.step === "STALE" ? `Idle > ${STALE_DAYS} days` : q.step)]);
+  if (q.from || q.to) parts.push(["date", `Created: ${q.from || "…"} to ${q.to || "…"}`]);
+  return parts;
+}
+function renderTable(){
+  const rows = filtered();
+  $("thead").innerHTML = TABLE.map(c => c.nosort
+    ? `<th class="${c.cls || ""} ${c.sticky ? "sticky" : ""}">${c.label}</th>`
+    : `<th data-sort="${c.id}" class="${Q.sort === c.id ? "sorted" : ""} ${c.cls || ""} ${c.sticky ? "sticky" : ""}">${c.label}<span class="sort">${Q.sort === c.id ? (Q.dir === "1" ? "↑" : "↓") : "↕"}</span></th>`).join("");
+  const size = Number(Q.size), pages = Math.max(1, Math.ceil(rows.length / size));
+  let page = Math.min(Math.max(1, Number(Q.page) || 1), pages); Q.page = String(page);
+  const start = (page - 1) * size;
+  const slice = rows.slice(start, start + size);
+  $("tbody").innerHTML = slice.length
+    ? slice.map(a => `<tr data-id="${a.applicant_id}">${TABLE.map(c => `<td class="${c.cls || ""} ${c.sticky ? "sticky" : ""}">${c.r(a)}</td>`).join("")}</tr>`).join("")
+    : `<tr><td colspan="${TABLE.length}" class="empty">${DATA[Q.issuer].length ? "No applications match these filters." : "This issuer has no applications yet."}</td></tr>`;
+  $("pageInfo").textContent = rows.length ? `Showing ${nf(start + 1)}–${nf(Math.min(start + size, rows.length))} of ${nf(rows.length)}` : "0 results";
+  $("pageNum").textContent = `${page} / ${pages}`;
+  $("prevBtn").disabled = page <= 1; $("nextBtn").disabled = page >= pages;
+  const ft = filterText();
+  $("activeFilters").hidden = !ft.length;
+  $("activeFilters").innerHTML = ft.length ? `Filters: ` + ft.map(([k, t]) => `<span class="chip">${esc(t)}<button data-clear="${k}" aria-label="Remove filter">✕</button></span>`).join("") + ` <button class="btn btn-link btn-sm" data-clear="all">Clear all</button>` : "";
+}
+function syncControls(){
+  fillProgram();
+  $("issuerSel").value = Q.issuer; $("sideIssuerName").textContent = ISSUERS[Q.issuer].name;
+  $("search").value = Q.q; $("fCh").value = Q.ch; $("fStep").value = Q.step;
+  $("fFrom").value = Q.from; $("fTo").value = Q.to; $("pageSize").value = Q.size;
+}
+function renderList(){ renderKpis(); renderTable(); updateExportCta(); applyEditMode(); }
+
+/* ==================================================================
+   APPLICANT DETAILS PAGE
+   ================================================================== */
+const DETAIL_TABS = [["overview", "Overview"], ["journey", "Onboarding journey"], ["kyc", "KYC & documents"], ["agreement", "Agreement & mandate"], ["credit", "Credit & limits"], ["activity", "Activity log"]];
+let detailTab = "overview", detailId = null;
+
+function journey(a){
+  // Returns per-step state + timestamp, deterministic per application
+  const r = mulberry32(a._i * 7919 + 13);
+  const end = a.activation_status === "Active" ? a.activatedAt : a.lastActivityAt;
+  let curIdx = STEPS.length, curState = "done";
+  if (a.activation_status === "Pending") { curIdx = a.stuck[2]; curState = a.stuck[3]; }
+  const doneCount = curState === "success" ? curIdx + 1 : curIdx;
+  const span = Math.max(60e3, end - a.createdAt);
+  const ts = []; let t = a.createdAt;
+  for (let i = 0; i < STEPS.length; i++) { t += span / Math.max(1, doneCount + 0.5) * (0.6 + r() * 0.8); ts.push(Math.min(t, end)); }
+  return STEPS.map((s, i) => {
+    if (i < doneCount) return { s, st: "done", at: ts[i] };
+    if (a.activation_status === "Pending" && i === curIdx) return { s, st: curState === "failed" ? "failed" : "current", at: a.lastActivityAt };
+    if (a.activation_status === "Pending" && curState === "success" && i === curIdx + 1) return { s, st: "next", at: null };
+    return { s, st: "pending", at: null };
+  });
+}
+function activity(a){
+  const j = journey(a);
+  const ev = [{ at: a.createdAt, t: `Application created via ${a.onboarding_channel}`, m: "System" }];
+  j.forEach(x => {
+    if (x.st === "done") ev.push({ at: x.at, t: `${x.s} completed`, m: "System" });
+    if (x.st === "failed") ev.push({ at: x.at, t: `${x.s} failed`, m: "System", bad: true });
+    if (x.st === "current") ev.push({ at: x.at, t: `${x.s} started`, m: "System" });
+  });
+  if (a.activatedAt) ev.push({ at: a.activatedAt, t: "Credit product issued · HF_ACCOUNT_CREATION_SUCCESS", m: `HF account ${a.hf_account_id}` });
+  if (a.application_status === "Rejected") ev.push({ at: a.lastActivityAt, t: `Rejected · ${a.sub_status}`, m: a.inactive_reason, bad: true });
+  return ev.concat(a.events).sort((x, y) => y.at - x.at);
+}
+const val = (v, blank = "Not available") => v == null || v === "" ? `<span class="blank">${blank}</span>` : esc(v);
+// PII is always masked in phase 1 — no Reveal
+function piiField(label, masked){
+  return `<div><small>${label} <span class="tag tag-pii">PII</span></small><span class="mono">${esc(masked)}</span><span class="cell-sub" title="Always masked in phase 1"> 🔒</span></div>`;
+}
+function docBadge(v, okWord){ if (!v) return `<span class="badge b-grey">Not submitted</span>`; if (v === "FAILED" || v === "Rejected") return `<span class="badge b-red"><span class="dot"></span>${v === "FAILED" ? "Failed" : v}</span>`; if (v === "Pending") return `<span class="badge b-amber"><span class="dot"></span>Pending</span>`; return `<span class="badge b-green"><span class="dot"></span>${okWord || v}</span>`; }
+
+function renderDetail(id){
+  const a = byId(id);
+  const v = $("detailView");
+  if (!a) {
+    v.innerHTML = `<div class="detail-top"><a class="back" href="${listHref()}">← Back to applications</a></div><div class="card"><div class="empty">Applicant <span class="mono">${esc(id)}</span> was not found for this issuer, or you don't have access to it.</div></div>`;
+    return;
+  }
+  if (detailId !== id) { detailId = id; detailTab = "overview"; }
+  const list = filtered();
+  const idx = list.indexOf(a);
+  const prev = idx > 0 ? list[idx - 1] : null, next = idx >= 0 && idx < list.length - 1 ? list[idx + 1] : null;
+  const d = daysSince(a.lastActivityAt);
+  const util = a.sanctioned_limit > 0 ? a.utilised_limit / a.sanctioned_limit * 100 : null;
+  const isBiz = ISSUERS[a.issuer].programType === "Business";
+  const idle = idleMs(a);
+  v.innerHTML = `
+    <div class="detail-top">
+      <a class="back" href="${listHref()}">← Back to applications</a>
+      <div class="pn">${idx >= 0 ? `<span>${nf(idx + 1)} of ${nf(list.length)} in your filtered list</span>` : `<span>Not in your current filtered list</span>`}
+        <a class="btn btn-sm" href="${prev ? detailHref(prev.applicant_id) : "#"}" aria-disabled="${!prev}">‹ Previous</a>
+        <a class="btn btn-sm" href="${next ? detailHref(next.applicant_id) : "#"}" aria-disabled="${!next}">Next ›</a></div>
+    </div>
+    <div class="card detail-head">
+      <div style="min-width:0">
+        <h1>${esc(applicantName(a))}</h1>
+        <div class="cell-sub" style="font-size:13px">${isBiz ? esc(a.business_entity_name) + " · " : ""}<span class="mono">${a.applicant_id}</span><button class="copy-btn" data-copy="${a.applicant_id}" title="Copy applicant ID">⧉ Copy</button></div>
+        <div class="detail-meta">${statusBadgeApp(a.application_status)}
+          <span class="chip grey">${esc(a.sub_status_label)} · <span class="mono">${a.sub_status}</span></span>
+          <span class="chip grey mono">${a.program_id}</span>
+          <span class="chip grey">Created ${showDT(a.createdAt)}</span></div>
+      </div>
+      <div class="detail-actions">
+        ${OPEN_STATUSES.includes(a.application_status) ? `<button class="btn" data-act="resend">Resend journey link</button>` : ""}
+        <button class="btn" data-act="copylink">Copy link</button>
+      </div>
+    </div>
+    <div class="strip">
+      <div class="stat"><small>Approved credit limit</small><b>${a.approved_credit_limit == null ? "—" : inr(a.approved_credit_limit)}</b><div class="cell-sub">${a.approved_credit_limit == null ? "Set when credit product is issued" : "Issued " + showDate(a.activatedAt)}</div></div>
+      ${isBiz ? `<div class="stat"><small>Utilised / available</small><b>${a.utilised_limit == null ? "—" : inr(a.utilised_limit)}</b>${util != null ? `<div class="bar"><span style="width:${Math.max(0, Math.min(100, util))}%"></span></div>` : ""}<div class="cell-sub">Available ${a.available_balance == null ? "—" : inr(a.available_balance)}</div></div>` : ""}
+      <div class="stat"><small>HF Account ID</small><b class="mono" style="font-size:14px">${a.hf_account_id || "—"}</b><div class="cell-sub">Created by Iron Bank after Credit product issued</div></div>
+      <div class="stat"><small>Idle for</small><b class="${idle > STALE_DAYS * DAY ? "cell-warn" : ""}">${idle < 0 ? "—" : dur(idle)}</b><div class="cell-sub">Last updated ${showDT(a.lastActivityAt)}</div></div>
+    </div>
+    <div class="card">
+      <div class="tabs" role="tablist">${DETAIL_TABS.map(([k, l]) => `<button class="tab ${detailTab === k ? "active" : ""}" data-dtab="${k}" role="tab">${l}</button>`).join("")}</div>
+      <div class="tab-body" id="tabBody"></div>
+    </div>`;
+  renderDetailTab(a, true);
+}
+function renderDetailTab(a, lazy){
+  const body = $("tabBody");
+  if (lazy) { // each tab loads its own data (PRD: lazy per tab)
+    body.innerHTML = `<div class="skeleton" style="width:40%"></div><div class="skeleton" style="width:70%"></div><div class="skeleton" style="width:55%"></div>`;
+    const tab = detailTab, id = a.applicant_id;
+    setTimeout(() => { if (detailTab === tab && detailId === id && $("tabBody")) renderDetailTab(a, false); }, 220);
+    return;
+  }
+  const T = detailTab;
+  if (T === "overview") {
+    const isBiz = ISSUERS[a.issuer].programType === "Business";
+    body.innerHTML = `
+      <div class="section-title">Applicant</div>
+      <div class="kv">
+        <div><small>Applicant name</small><span>${esc(applicantName(a))}</span></div>
+        <div><small>Full name / first · middle · last</small><span>${a.full_name ? "full_name stored" : esc([a.first_name, a.middle_name || "—", a.last_name].join(" · "))}</span></div>
+        ${piiField("Mobile number", MASK.mobile(fullMobile(a)))}
+        ${piiField("Email address", MASK.email(a.email))}
+        ${piiField("Date of birth", MASK.dob(a.date_of_birth))}
+        ${piiField("PAN", MASK.pan(a.pan))}
+        <div><small>Aadhaar</small><span class="blank">Never displayed or exported</span></div>
+      </div>
+      <div class="note">PII is always masked in phase 1. Unmasking is phase 2, only if the requirement comes.</div>
+      ${isBiz ? `<div class="section-title">Business</div>
+      <div class="kv">
+        <div><small>Business entity name</small><span>${esc(a.business_entity_name)}</span></div>
+        <div><small>City</small><span>${esc(a.business_city)}</span></div>
+        <div><small>State</small><span>${esc(a.business_state)}</span></div>
+        <div><small>GST</small><span>${val(a.gst_status, "Not submitted")}</span></div>
+      </div>` : ""}
+      <div class="section-title">Identifiers</div>
+      <div class="kv">
+        <div><small>Applicant ID</small><span class="mono">${a.applicant_id}</span></div>
+        <div><small>External applicant ID</small><span class="mono">${a.external_applicant_id}</span></div>
+        <div><small>Bank customer ID</small><span class="mono">${val(a.bank_customer_id, "Not created yet")}</span></div>
+        <div><small>HF Account ID</small><span class="mono">${val(a.hf_account_id, "Not created yet")}</span></div>
+        <div><small>Program ID</small><span class="mono">${a.program_id}</span></div>
+        <div><small>Onboarding journey ID</small><span class="mono">${a.onboarding_journey_id}</span></div>
+        <div><small>Application status</small><span>${a.application_status}</span></div>
+        <div><small>Sub-status</small><span class="mono">${a.sub_status}</span></div>
+        <div><small>Created on</small><span>${showDT(a.createdAt)}</span></div>
+        <div><small>Last updated on</small><span>${showDT(a.lastActivityAt)}</span></div>
+      </div>
+      ${a.application_status === "Rejected" ? `<div class="note warn"><b>Rejected:</b> ${esc(a.inactive_reason)}.</div>` : ""}`;
+  } else if (T === "journey") {
+    const icon = { done: ["t-done", "✓"], current: ["t-current", "•"], failed: ["t-fail", "✕"], next: ["t-current", "…"], pending: ["t-pending", ""] };
+    const j = journey(a);
+    body.innerHTML = `${a.activation_status === "Pending" ? `<div class="note ${a.stuck[3] === "failed" ? "warn" : ""}" style="margin:0 0 18px">Current stage <b>${esc(a.sub_status_label)}</b> (<span class="mono">${a.sub_status}</span>) · no activity for ${daysSince(a.lastActivityAt)} days.</div>` : ""}
+      <ul class="timeline">${j.map((x, i) => {
+        const [c, ic] = icon[x.st];
+        const meta = x.st === "done" ? "Completed · " + showDT(x.at) : x.st === "failed" ? "Failed · " + showDT(x.at) : x.st === "current" ? "In progress since " + showDT(x.at) : x.st === "next" ? "Waiting for the applicant to start" : "Not started";
+        return `<li><div class="t-icon ${c}">${ic || i + 1}</div><div><div class="t-title">${x.s}</div><div class="t-meta">${meta}</div></div></li>`;
+      }).join("")}
+      ${a.activatedAt ? `<li><div class="t-icon t-done">★</div><div><div class="t-title">Credit product issued</div><div class="t-meta">${showDT(a.activatedAt)} · ${Math.round((a.activatedAt - a.createdAt) / DAY)} days from request</div></div></li>` : ""}</ul>`;
+  } else if (T === "kyc") {
+    const rows = [
+      ["Aadhaar eKYC", a.aadhaar_kyc_status, "Completed"],
+      ["Applicant photo", a.applicant_photo_doc_status],
+      ["Shop images", a.shop_images_doc_status],
+      ["GST", a.gst_status, "Completed"],
+    ];
+    body.innerHTML = `<div class="table-wrap" style="border:1px solid var(--hf-card-border);border-radius:10px"><table>
+      <thead><tr><th>Check / document</th><th>Status</th><th>Verified by</th><th>Updated</th></tr></thead>
+      <tbody>${rows.map(([n, s, ok]) => `<tr><td class="cell-main">${n}</td><td>${docBadge(s, ok)}</td><td>${s && s !== "Pending" ? (n === "Aadhaar eKYC" ? "UIDAI eKYC (auto)" : s === "Rejected" ? "Ops reviewer" : "Auto + ops review") : "—"}</td><td>${s && s !== "Pending" ? showDT(a.lastActivityAt) : "—"}</td></tr>`).join("")}</tbody></table></div>
+      <div class="note">Blank values in the MIS mean the document was never submitted. Exports keep them blank (FR-13).</div>`;
+  } else if (T === "agreement") {
+    const card = (title, s, provider, reason) => `<div class="subcard"><h3>${title} ${docBadge(s)}</h3><div class="kv">
+      <div><small>Provider</small><span>${provider}</span></div>
+      <div><small>Status</small><span>${val(s, "Not started")}</span></div>
+      ${s === "FAILED" ? `<div><small>Failure reason</small><span class="cell-warn">${reason}</span></div><div><small>Attempts</small><span>${1 + (a._i % 3)}</span></div>` : ""}
+      ${s === "Completed" ? `<div><small>Completed on</small><span>${showDT(a.activatedAt || a.lastActivityAt)}</span></div>` : ""}
+    </div></div>`;
+    body.innerHTML = `<div class="two-col">
+      ${card("Agreement (eSign)", a.agreement_status, "Aadhaar eSign", "OTP not entered within session")}
+      ${card("Mandate (eNACH)", a.mandate_status, "NPCI eNACH (net banking / debit card)", "Bank account name mismatch")}</div>`;
+  } else if (T === "credit") {
+    const util = a.sanctioned_limit > 0 && a.utilised_limit != null ? a.utilised_limit / a.sanctioned_limit * 100 : null;
+    const dqb = `<span class="tag tag-dq">Not populated</span>`;
+    body.innerHTML = `
+      <div class="section-title">Risk run</div>
+      <div class="kv">
+        <div><small>Credit period (days) ${dqb}</small><span>${val(a.credit_period, "Blank")}</span></div>
+        <div><small>Latest limit as per risk run ${dqb}</small><span>${val(inr(a.latest_limit_risk_run), "Blank")}</span></div>
+        <div><small>Max limit possible (risk run) ${dqb}</small><span>${val(inr(a.max_limit_risk_run), "Blank")}</span></div>
+      </div>
+      <div class="note warn">These three fields are blank for all 1,819 rows in today's MIS. Owner: Credit engineering (PRD Q6).</div>
+      <div class="section-title">Credit line</div>
+      <div class="kv">
+        <div><small>Approved credit limit</small><span>${val(inr(a.approved_credit_limit), "Set when credit product is issued")}</span></div>
+        <div><small>Utilised limit</small><span>${val(inr(a.utilised_limit), "—")}</span>${a.utilised_limit < 0 ? ` <span class="tag tag-dq">Negative</span>` : ""}</div>
+        <div><small>Available balance</small><span>${val(inr(a.available_balance), "—")}</span></div>
+        <div><small>Utilisation</small><span>${util == null ? `<span class="blank">—</span>` : util.toFixed(1) + "%"}</span>${util != null ? `<div class="bar" style="max-width:220px"><span style="width:${Math.max(0, Math.min(100, util))}%"></span></div>` : ""}</div>
+      </div>
+      ${a.sanctioned_limit === 0 ? `<div class="note warn">Approved credit limit is 0 on an issued account. Does 0 mean "not yet sanctioned" or a true zero limit? (PRD data quality findings)</div>` : ""}`;
+  } else if (T === "activity") {
+    const ev = activity(a);
+    body.innerHTML = `<ul class="timeline">${ev.map(e => `<li><div class="t-icon ${e.bad ? "t-fail" : e.ops ? "t-current" : "t-done"}">${e.bad ? "✕" : e.ops ? "◆" : "✓"}</div><div><div class="t-title">${esc(e.t)}</div><div class="t-meta">${showDT(e.at)} · ${esc(e.m)}</div></div></li>`).join("")}</ul>`;
+  }
+}
+
+/* ==================================================================
+   CSV BUILDER  — RFC 4180, UTF-8 BOM, CRLF, formula-injection guard,
+   masking, blanks for missing values.
+   ================================================================== */
+const NUMERIC = new Set(["int", "inr", "pct"]);
+function fmtValue(c, a, opt){
+  let v = c.get(a);
+  if (v == null || v === "" || (typeof v === "number" && isNaN(v))) return "";
+  if (c.pii) v = MASK[c.pii](String(v));          // PII always masked in phase 1
+  if (c.key === "mobile_number") v = v.replace(/^\+(\d+) /, "(+$1) ");   // a leading "+" would trip the formula guard
+  switch (c.type) {
+    case "date": return opt.dateFmt === "dmy" ? dmyDate(v) : isoDate(v);
+    case "datetime": return isoDT(v);
+    case "inr": return Number(v).toFixed(2);
+    case "pct": return Number(v).toFixed(1);
+    case "int": return String(Math.round(v));
+    default: return String(v).replace(/\s+/g, " ").trim();
+  }
+}
+function csvCell(s, type){
+  if (s === "") return "";
+  if (NUMERIC.has(type)) return s;
+  if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;          // formula-injection guard
+  return '"' + s.replace(/"/g, '""') + '"';          // text is always quoted
+}
+function headerOf(c, style){ return style === "mis" ? (c.mis || c.key) : c.label; }
+function buildCsv(rows, keys, opt, meta){
+  const cols = keys.map(k => COL[k]);
+  const lines = [];
+  if (opt.summary) lines.push(csvCell(`OnboardIQ Applications export | Issuer: ${meta.issuer} | Filters: ${meta.filters || "None"} | Snapshot: ${isoDT(meta.snapshotAt)} | Rows: ${rows.length} | PII: masked | Generated by: ${meta.user}`, "text"));
+  lines.push(cols.map(c => csvCell(headerOf(c, opt.header), "text")).join(","));
+  for (const a of rows) lines.push(cols.map(c => csvCell(fmtValue(c, a, opt), c.type)).join(","));
+  return "﻿" + lines.join("\r\n") + "\r\n";
+}
+function download(name, text){
+  const url = URL.createObjectURL(new Blob([text], { type: "text/csv;charset=utf-8" }));
+  const link = Object.assign(document.createElement("a"), { href: url, download: name });
+  document.body.appendChild(link); link.click(); link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+const fmtBytes = b => b < 1024 ? b + " B" : b < 1048576 ? (b / 1024).toFixed(1) + " KB" : (b / 1048576).toFixed(1) + " MB";
+
+/* ==================================================================
+   EXPORT JOBS (simulated async backend)
+   Queued → In progress → Completed (auto-download; file kept 24 h, Download from logs) → Expired
+   or Failed / Cancelled
+   ================================================================== */
+let jobs = [], jobSeq = 1, unseen = 0;
+const isActive = j => j.status === "Queued" || j.status === "In progress";
+const activeJob = () => jobs.find(j => j.issuer === Q.issuer && isActive(j));
+function countFor(q){ return filtered(q).length; }
+function estimateFor(q){ return countFor(q) * (demo.large ? 70 : 1); }
+function fileNameFor(issuer, snap){
+  const base = `OnboardIQ_Applications_${ISSUERS[issuer].name.replace(/\s+/g, "")}_${isoDate(snap)}`;
+  const same = jobs.some(j => j.issuer === issuer && isoDate(j.snapshotAt) === isoDate(snap));
+  return base + (same ? "_" + hhmm(snap) : "") + ".csv";
+}
+function createJob({ q, cols, opt }){
+  const t = now();
+  const today = jobs.filter(j => isoDate(j.createdAt) === isoDate(t)).length;
+  if (jobs.some(j => j.issuer === q.issuer && isActive(j))) return { error: 409, msg: "An export is in progress. You can start another when it finishes." };
+  if (today >= LIMITS.perDay) return { error: 429, msg: `You've reached today's limit of ${LIMITS.perDay} exports. Try again tomorrow.` };
+  const est = estimateFor(q);
+  if (est === 0) return { error: 422, msg: "No applications to export. Change your filters." };
+  if (est > LIMITS.maxRows) return { error: 422, msg: `Export contains too many records (max ${nf(LIMITS.maxRows)}). Please apply additional filters and try again.` };
+  const base = countFor(q);
+  const job = {
+    id: "exp_" + String(jobSeq++).padStart(4, "0"), issuer: q.issuer, q: { ...q }, cols: [...cols], opt: { ...opt },
+    status: "Queued", createdAt: t, snapshotAt: t, estimate: base, rowsWritten: 0, downloads: 0,
+    filters: filterText(q).map(x => x[1]).join("; "), user: USER.email,
+    duration: (demo.slow ? 25000 : 3500) + base * 1.2, failPlan: demo.fail,
+  };
+  job.fileName = fileNameFor(q.issuer, t);
+  if (demo.fail) { demo.fail = false; $("dFail").checked = false; }
+  jobs.unshift(job);
+  return { job };
+}
+function snapshotRows(j){ return filtered(j.q).filter(a => a.createdAt <= j.snapshotAt); }
+function jobCsv(j){ return buildCsv(snapshotRows(j), j.cols, j.opt, { issuer: ISSUERS[j.issuer].name, filters: j.filters, snapshotAt: j.snapshotAt, user: j.user }); }
+function finishJob(j){
+  const rows = snapshotRows(j);
+  j.rowCount = rows.length; j.rowsWritten = rows.length;
+  j.size = new Blob([jobCsv(j)]).size;
+  j.status = "Completed"; j.completedAt = now(); j.expiresAt = j.completedAt + LIMITS.retentionMs;   // file stays in S3 for 24 h
+  if (!demo.blocked) { deliver(j, "auto"); toast("Export ready. Your CSV has been downloaded. You can download it again from Export logs for 24 hours.", "ok"); }
+  else { unseen++; toast("Export ready.", "ok", { label: "Download", fn: () => downloadJob(j.id) }); }
+}
+function deliver(j, source){
+  download(j.fileName, jobCsv(j));          // production: hidden link to a fresh 5-min signed URL
+  j.downloads = (j.downloads || 0) + 1; j.lastDownloadAt = now(); j.lastSource = source;
+}
+function tick(){
+  let changed = false;
+  for (const j of jobs) {
+    if (j.status === "Queued" && now() - j.createdAt > 1200) { j.status = "In progress"; j.startedAt = now(); changed = true; }
+    else if (j.status === "In progress") {
+      const p = Math.min(1, (now() - j.startedAt) / j.duration);
+      j.rowsWritten = Math.floor(p * j.estimate); changed = true;
+      if (j.failPlan && p > .55) { j.status = "Failed"; j.completedAt = now(); j.error = "Worker error while writing batch 2 (simulated)."; unseen++; toast("Export failed. Nothing was downloaded.", "bad", { label: "Retry", fn: () => retryJob(j.id) }); }
+      else if (p >= 1) finishJob(j);
+    } else if (j.status === "Completed" && now() > j.expiresAt) { j.status = "Expired"; changed = true; }
+  }
+  if (changed) { renderCentre(); updateExportCta(); }
+}
+setInterval(tick, 400);
+function downloadJob(id){
+  const j = jobs.find(x => x.id === id); if (!j) return;
+  if (j.status !== "Completed" || now() > j.expiresAt) { toast("This file was deleted after 24 hours. Run the export again.", "bad"); return; }
+  deliver(j, "logs"); toast("Downloading " + j.fileName, "ok"); renderCentre();
+}
+function cancelJob(id){ const j = jobs.find(x => x.id === id); if (!j || !isActive(j)) return; j.status = "Cancelled"; j.completedAt = now(); toast("Export cancelled. The partial file was deleted.", "info"); renderCentre(); updateExportCta(); }
+function retryJob(id){
+  const j = jobs.find(x => x.id === id); if (!j) return;
+  const r = createJob({ q: j.q, cols: j.cols, opt: j.opt });
+  if (r.error) { toast(r.msg, "bad"); return; }
+  toast("Preparing export… We'll let you know when it's ready. You can keep working.", "info");
+  renderCentre(); updateExportCta();
+}
+function seedJobs(){
+  const mk = (agoMs, status, extra) => {
+    const t = now() - agoMs;
+    const j = { id: "exp_" + String(jobSeq++).padStart(4, "0"), issuer: "SSFB", q: { ...DEFAULT_Q }, cols: [...tableColsFor("SSFB")], opt: { header: "label", dateFmt: "iso", summary: false }, status, createdAt: t, snapshotAt: t, startedAt: t + 1500, completedAt: t + 40000, filters: "", user: USER.email, fileName: fileNameFor("SSFB", t), downloads: 0, ...extra };
+    const rows = snapshotRows(j); j.estimate = j.rowCount = rows.length; j.rowsWritten = status === "Failed" ? Math.floor(rows.length * .4) : rows.length;
+    j.expiresAt = j.completedAt + LIMITS.retentionMs; j.size = rows.length * 380;
+    jobs.push(j);
+  };
+  mk(4 * DAY, "Expired", { downloads: 1 });
+  mk(20 * 3600e3, "Completed", { downloads: 1, filters: "Status: In progress", q: { ...DEFAULT_Q, tab: "In progress" } });
+  mk(5 * 3600e3, "Failed", { error: "Timed out after 15 minutes." });
+  mk(2 * 3600e3, "Completed", { downloads: 2 });
+  jobs.sort((x, y) => y.createdAt - x.createdAt);
+}
+
+/* ---------- Export logs ---------- */
+const LOG_LABEL = { Queued: "In progress", "In progress": "In progress", Completed: "Completed", Expired: "Expired", Failed: "Failed", Cancelled: "Cancelled" };
+function statusBadge(s){ const m = { Queued: "b-blue", "In progress": "b-blue", Completed: "b-green", Failed: "b-red", Expired: "b-grey", Cancelled: "b-grey" }; return `<span class="badge ${m[s]}">${isActive({ status: s }) ? `<span class="spinner dark" style="width:10px;height:10px"></span>` : `<span class="dot"></span>`}${LOG_LABEL[s]}</span>`; }
+function leftLong(t){ const h = (t - now()) / 3600e3; if (h <= 0) return "expired"; if (h < 1) return Math.ceil(h * 60) + " min"; if (h < 24) return Math.floor(h) + " h"; return Math.floor(h / 24) + " d " + Math.floor(h % 24) + " h"; }
+function renderCentre(){
+  const n = jobs.filter(isActive).length + unseen;
+  $("exportsCount").hidden = !n; $("exportsCount").textContent = n;
+  if (!$("centre").classList.contains("open")) return;
+  const list = jobs.filter(j => now() - j.createdAt < LIMITS.logDays * DAY || isActive(j));
+  $("centreBody").innerHTML = list.length ? list.map(j => {
+    const pct = j.estimate ? Math.floor(j.rowsWritten / j.estimate * 100) : 0;
+    let line = "";
+    if (j.status === "Queued") line = "Waiting for a worker";
+    if (j.status === "In progress") line = `${pct}% (${nf(j.rowsWritten)} of ${nf(j.estimate)} rows)`;
+    if (j.status === "Completed") line = `${nf(j.rowCount)} rows · ${fmtBytes(j.size)} · <b>expires in ${leftLong(j.expiresAt)}</b>${j.downloads ? ` · downloaded ${j.downloads}×` : ""}`;
+    if (j.status === "Expired") line = `${nf(j.rowCount)} rows · file deleted after 24 hours`;
+    if (j.status === "Cancelled") line = "Cancelled. The partial file was deleted.";
+    return `<div class="job">
+      <div class="job-top"><div class="job-name">${esc(j.fileName)}</div>${statusBadge(j.status)}</div>
+      ${j.status === "In progress" ? `<div class="bar"><span style="width:${pct}%"></span></div>` : ""}
+      <div class="job-meta">${line}<br>
+        Requested ${showDT(j.createdAt)} · ${esc(ISSUERS[j.issuer].name)} · ${j.cols.length} columns · PII masked<br>
+        Filters: ${esc(j.filters || "None")}</div>
+      ${j.status === "Failed" ? `<div class="job-err">Export failed. Nothing was downloaded. ${esc(j.error || "")}</div>` : ""}
+      <div class="job-actions">
+        ${j.status === "Completed" ? `<button class="btn btn-sm btn-primary" data-job="dl" data-id="${j.id}">${DL_ICON}Download</button>` : ""}
+        ${isActive(j) ? `<button class="btn btn-sm" data-job="cancel" data-id="${j.id}">Cancel</button>` : ""}
+        ${["Failed", "Expired", "Cancelled"].includes(j.status) ? `<button class="btn btn-sm" data-job="retry" data-id="${j.id}">${j.status === "Failed" ? "Retry" : "Run again"}</button>` : ""}
+      </div></div>`;
+  }).join("") : `<div class="empty">No exports in the last ${LIMITS.logDays} days. Use Export CSV on the Applications page.</div>`;
+}
+function openCentre(){ unseen = 0; $("centre").classList.add("open"); $("overlay").classList.add("open"); $("centre").setAttribute("aria-hidden", "false"); renderCentre(); }
+function closeCentre(){ $("centre").classList.remove("open"); $("overlay").classList.remove("open"); $("centre").setAttribute("aria-hidden", "true"); }
+
+/* ---------- Export CTA ---------- */
+const DL_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>`;
+function updateExportCta(){
+  const wrap = $("exportWrap"), b = $("exportBtn"), tip = $("exportTip");
+  wrap.hidden = !perms.export;
+  if (!perms.export) return;
+  const j = activeJob();
+  const count = countFor(Q);
+  if (j) {
+    const pct = j.estimate ? Math.floor(j.rowsWritten / j.estimate * 100) : 0;
+    b.disabled = true; b.innerHTML = `<span class="spinner"></span>Preparing export… ${j.status === "In progress" ? pct + "%" : ""}`;
+    tip.textContent = "An export is in progress. You can start another when it finishes.";
+  } else if (!count) {
+    b.disabled = true; b.innerHTML = DL_ICON + "Export CSV"; tip.textContent = "No applications to export. Change your filters.";
+  } else {
+    b.disabled = false; b.innerHTML = DL_ICON + "Export CSV"; tip.textContent = "";
+  }
+}
+
+/* ==================================================================
+   EXPORT DIALOG
+   ================================================================== */
+let X = null;                  // dialog state
+let lastSelection = null;      // last-used columns, remembered for the session
+function openExport(){
+  if ($("exportBtn").disabled) return;
+  X = { cols: lastSelection ? [...lastSelection.cols] : tableColsFor(Q.issuer), header: lastSelection ? lastSelection.header : "label", dateFmt: "iso", summary: false, search: "", preview: false, error: "" };
+  const iss = ISSUERS[Q.issuer];
+  $("modalRoot").innerHTML = `<div class="modal-backdrop" id="mBack"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+    <div class="modal-head"><div><h2 id="mTitle" data-editable>Export applications</h2><div class="cell-sub" id="mSub"></div></div><button class="icon-btn" data-m="close" aria-label="Close">✕</button></div>
+    <div class="modal-body">
+      <div>
+        <div class="section-title" style="margin-top:0;display:flex;justify-content:space-between;align-items:center"><span>Available columns</span><button class="btn btn-link btn-sm" data-m="reset" style="text-transform:none;letter-spacing:0">Reset to table columns</button></div>
+        <div class="picker-tools"><input class="input" id="mSearch" placeholder="Search columns" /><button class="btn btn-sm" data-m="all">Select all</button><button class="btn btn-sm" data-m="none">Clear</button></div>
+        <div class="picker" id="mPicker"></div>
+      </div>
+      <div>
+        <div class="section-title" style="margin-top:0;display:flex;justify-content:space-between"><span>Selected columns · <span id="mSelCount"></span></span><span style="text-transform:none;font-weight:400;letter-spacing:0">Drag to reorder</span></div>
+        <ul class="sel-list" id="mSel"></ul>
+        <div class="opts">
+          <div class="opt"><label>Headers</label><select class="select" id="mHeader"><option value="label">Readable labels</option><option value="mis">System keys</option></select></div>
+          <div class="opt"><label>Date format</label><select class="select" id="mDate"><option value="iso">YYYY-MM-DD</option><option value="dmy">DD-MM-YYYY</option></select></div>
+          <div class="check" style="cursor:default"><span>🔒</span><span>PII is always masked<small>Mobile, email, date of birth, PAN and FD account number. Unmasking is phase 2.</small></span></div>
+          <label class="check"><input type="checkbox" id="mSummary" /> <span>Add filter summary row<small>First line lists issuer, filters, snapshot time and row count</small></span></label>
+        </div>
+        <div class="summary" id="mSummaryBox"></div>
+        <div id="mErr"></div>
+        <button class="btn btn-link btn-sm" data-m="preview" id="mPrevBtn" style="padding-left:0;margin-top:6px">Show preview (first 5 rows)</button>
+        <div id="mPreview"></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <span class="cell-sub">Starts with the columns shown in the Applications table. Add or remove any column.</span>
+      <span class="toolbar-spacer"></span>
+      <button class="btn" data-m="close">Cancel</button>
+      <button class="btn btn-primary" data-m="start" id="mStart">${DL_ICON}Start export</button>
+    </div></div></div>`;
+  $("mSub").textContent = `${iss.name} · ${iss.program}`;
+  $("mHeader").value = X.header; $("mDate").value = X.dateFmt; $("mSummary").checked = X.summary;
+  $("mSearch").oninput = e => { X.search = e.target.value; renderPicker(); };
+  $("mHeader").onchange = e => { X.header = e.target.value; renderSel(); renderPreview(); };
+  $("mDate").onchange = e => { X.dateFmt = e.target.value; renderPreview(); };
+  $("mSummary").onchange = e => { X.summary = e.target.checked; renderPreview(); };
+  renderDialog();
+  setTimeout(() => $("mSearch").focus(), 30);
+}
+function closeExport(){ $("modalRoot").innerHTML = ""; X = null; }
+function renderDialog(){ renderPicker(); renderSel(); renderOpts(); renderSummary(); renderPreview(); }
+const colMatch = (c, s) => !s || c.label.toLowerCase().includes(s) || c.key.includes(s);
+function renderPicker(){
+  const s = X.search.trim().toLowerCase();
+  const sel = new Set(X.cols);
+  const avail = colsFor(Q.issuer), iss = ISSUERS[Q.issuer];
+  $("mPicker").innerHTML = `<div class="pgroup-head" style="position:static;background:var(--hf-secondary-bg);color:var(--hf-btn-blue);font-weight:500">Showing columns for ${esc(iss.programType)} programs (${esc(iss.product)}). ${COLS.length - avail.length} columns for other program types are hidden.</div>` + groupsFor(Q.issuer).map(g => {
+    const cols = avail.filter(c => c.group === g && colMatch(c, s));
+    if (!cols.length) return "";
+    const all = avail.filter(c => c.group === g);
+    const n = all.filter(c => sel.has(c.key)).length;
+    return `<div class="pgroup"><div class="pgroup-head"><input type="checkbox" data-group="${g}" ${n === all.length ? "checked" : ""} aria-label="Select group ${g}" />${g}<span class="cnt">${n}/${all.length}</span></div>
+      ${cols.map(c => `<label class="prow"><input type="checkbox" data-col="${c.key}" ${sel.has(c.key) ? "checked" : ""} />
+        <div class="pl"><div>${c.label}${c.table ? ` <span class="tag tag-mis">In table</span>` : ""}${c.pii ? ` <span class="tag tag-pii">PII · masked</span>` : c.piiShown ? ` <span class="tag tag-pii">PII · as on screen</span>` : ""}${c.applies !== "All" ? ` <span class="tag tag-derived">${c.applies}${c.product ? " · " + c.product : ""}</span>` : ""}${c.derived ? ` <span class="tag tag-derived">Derived</span>` : ""}${c.dq ? ` <span class="tag tag-dq">Often blank</span>` : ""}</div>
+        <div class="fmt">${c.fmt || { text: "Text", date: "Date", datetime: "Date-time, IST", int: "Whole number", inr: "INR, 2 decimals", pct: "Percent, 1 decimal" }[c.type]} · <span class="mono">${c.key}</span></div></div></label>`).join("")}</div>`;
+  }).join("") || `<div class="empty">No columns match "${esc(X.search)}".</div>`;
+  document.querySelectorAll("#mPicker [data-group]").forEach(cb => {
+    const all = colsFor(Q.issuer).filter(c => c.group === cb.dataset.group), n = all.filter(c => sel.has(c.key)).length;
+    cb.indeterminate = n > 0 && n < all.length;
+  });
+}
+function renderSel(){
+  $("mSelCount").textContent = X.cols.length;
+  $("mSel").innerHTML = X.cols.length ? X.cols.map((k, i) => { const c = COL[k]; return `<li draggable="true" data-i="${i}">
+    <span class="grip" title="Drag">⋮⋮</span><span class="idx">${i + 1}</span>
+    <span class="nm">${c.label}${c.pii ? ` <span class="tag tag-pii">PII</span>` : ""}${X.header === "mis" ? `<div class="hdr mono">${esc(headerOf(c, X.header))}</div>` : ""}</span>
+    <button class="mini" data-mv="-1" data-i="${i}" ${i === 0 ? "disabled" : ""} aria-label="Move up">↑</button>
+    <button class="mini" data-mv="1" data-i="${i}" ${i === X.cols.length - 1 ? "disabled" : ""} aria-label="Move down">↓</button>
+    <button class="mini" data-rm="${k}" aria-label="Remove">✕</button></li>`; }).join("")
+    : `<li style="justify-content:center;color:var(--hf-text-secondary)">Select at least one column to export.</li>`;
+}
+function renderOpts(){}
+function renderSummary(){
+  const est = estimateFor(Q);
+  const t = now();
+  const piiCols = X.cols.filter(k => COL[k].pii).length;
+  $("mSummaryBox").innerHTML = `
+    <div class="row"><span>Rows</span><span>${nf(est)}${demo.large ? " (simulated ×70)" : ""}</span></div>
+    <div class="row"><span>Filters</span><span>${esc(filterText().map(x => x[1]).join("; ") || "None (all applications)")}</span></div>
+    <div class="row"><span>File name</span><span class="mono" style="font-size:12px">${esc(fileNameFor(Q.issuer, t))}</span></div>
+    <div class="row"><span>Estimated size</span><span>${fmtBytes(Math.round(est * Math.max(1, X.cols.length) * 16))}</span></div>
+    <div class="row"><span>PII</span><span>${piiCols ? `${piiCols} column${piiCols > 1 ? "s" : ""}, always masked` : "None selected"}</span></div>
+    <div class="cell-sub" style="margin-top:6px">Includes applications created up to ${showDT(t)}. Applications created after you start the export won't be included.</div>`;
+  const over = est > LIMITS.maxRows;
+  $("mErr").innerHTML = X.error ? `<div class="err">${esc(X.error)}</div>` : over ? `<div class="err">Export contains too many records (max ${nf(LIMITS.maxRows)}). Please apply additional filters and try again.</div>` : "";
+  $("mStart").disabled = over || !X.cols.length;
+}
+function renderPreview(){
+  if (!X) return;
+  $("mPrevBtn").textContent = X.preview ? "Hide preview" : "Show preview (first 5 rows)";
+  if (!X.preview || !X.cols.length) { $("mPreview").innerHTML = ""; return; }
+  const rows = filtered().slice(0, 5);
+  const opt = { dateFmt: X.dateFmt, header: X.header };
+  $("mPreview").innerHTML = `<div class="preview-wrap"><table><thead><tr>${X.cols.map(k => `<th>${esc(headerOf(COL[k], X.header))}</th>`).join("")}</tr></thead>
+    <tbody>${rows.map(a => `<tr>${X.cols.map(k => { const v = fmtValue(COL[k], a, opt); return `<td class="${NUMERIC.has(COL[k].type) ? "num" : ""}">${v === "" ? `<span class="cell-sub">(blank)</span>` : esc(v)}</td>`; }).join("")}</tr>`).join("")}</tbody></table></div>`;
+}
+function selChanged(){ X.error = ""; renderPicker(); renderSel(); renderSummary(); renderPreview(); }
+function startExport(){
+  if (!X.cols.length) { X.error = "Select at least one column to export."; renderSummary(); return; }
+  const r = createJob({ q: Q, cols: X.cols, opt: { header: X.header, dateFmt: X.dateFmt, summary: X.summary } });
+  if (r.error) { X.error = r.msg; renderSummary(); return; }
+  lastSelection = { cols: [...X.cols], header: X.header };
+  closeExport();
+  toast("Preparing export… We'll let you know when it's ready. You can keep working.", "info", { label: "View exports", fn: openCentre });
+  updateExportCta(); renderCentre();
+}
+
+/* ==================================================================
+   TOASTS, EDIT MODE, EVENTS
+   ================================================================== */
+function toast(msg, kind = "info", action){
+  const el = document.createElement("div");
+  el.className = "toast " + kind;
+  el.innerHTML = `<span style="flex:1">${esc(msg)}</span>`;
+  if (action) { const b = document.createElement("button"); b.textContent = action.label; b.onclick = () => { action.fn(); el.remove(); }; el.appendChild(b); }
+  $("toasts").appendChild(el);
+  setTimeout(() => el.remove(), action ? 8000 : 4500);
+}
+let editing = false;
+function applyEditMode(){ document.querySelectorAll("[data-editable]").forEach(el => el.contentEditable = editing ? "true" : "false"); }
+$("editToggle").onclick = () => { editing = !editing; document.body.classList.toggle("editing", editing); $("editToggle").textContent = editing ? "✓ Done editing" : "✎ Edit text"; applyEditMode(); };
+
+function route(){
+  const r = parseHash();
+  if (lastRoute === "list" && r.name === "detail") listScroll = window.scrollY;
+  syncControls();
+  $("listView").hidden = r.name !== "list";
+  $("detailView").hidden = r.name !== "detail";
+  if (r.name === "list") {
+    $("crumbs").innerHTML = `<span data-editable>Operations</span> / <span data-editable>OnboardIQ</span> / <b>Applications</b>`;
+    renderList();
+    if (lastRoute === "detail") requestAnimationFrame(() => window.scrollTo(0, listScroll));
+  } else {
+    $("crumbs").innerHTML = `Operations / OnboardIQ / <a href="${listHref()}">Applications</a> / <b class="mono">${esc(r.id)}</b>`;
+    renderDetail(r.id); window.scrollTo(0, 0);
+  }
+  lastRoute = r.name; applyEditMode();
+}
+// Browser back / forward (when the URL is available)
+const fromUrl = () => { try { if (location.hash && location.hash !== currentHash) { currentHash = location.hash; route(); } } catch (e) {} };
+window.addEventListener("popstate", fromUrl);
+window.addEventListener("hashchange", fromUrl);
+
+// filter controls
+$("issuerSel").innerHTML = Object.entries(ISSUERS).map(([k, v]) => `<option value="${k}">${v.name}</option>`).join("");
+const fillProgram = () => { $("fCh").innerHTML = `<option value="">All programs</option><option>${ISSUERS[Q.issuer].programId}</option>`; $("fCh").value = Q.ch; };
+$("fStep").innerHTML = `<option value="">Any sub-status</option><option value="STALE">Idle > ${STALE_DAYS} days</option>` + Object.keys(SUB_LABELS).map(c => `<option value="${c}">${c}</option>`).join("");
+let searchTimer;
+$("search").oninput = e => { clearTimeout(searchTimer); searchTimer = setTimeout(() => setQ({ q: e.target.value }), 200); };
+$("issuerSel").onchange = e => setQ({ ...DEFAULT_Q, issuer: e.target.value }) || syncControls();
+$("fCh").onchange = e => setQ({ ch: e.target.value });
+$("fStep").onchange = e => setQ({ step: e.target.value });
+$("fFrom").onchange = e => setQ({ from: e.target.value });
+$("fTo").onchange = e => setQ({ to: e.target.value });
+$("pageSize").onchange = e => setQ({ size: e.target.value });
+$("prevBtn").onclick = () => setQ({ page: String(Number(Q.page) - 1) }, false);
+$("nextBtn").onclick = () => setQ({ page: String(Number(Q.page) + 1) }, false);
+$("resetBtn").onclick = () => { setQ({ ...DEFAULT_Q, issuer: Q.issuer }); syncControls(); };
+$("sideIssuer").onclick = () => { if (!$("listView").hidden) $("issuerSel").focus(); else navigate(listHref()); };
+$("exportBtn").onclick = openExport;
+$("exportsBtn").onclick = openCentre;
+$("closeCentre").onclick = closeCentre;
+$("overlay").onclick = closeCentre;
+
+function openNewTab(href){ try { const w = window.open(location.href.split("#")[0] + href, "_blank"); if (!w) navigate(href); } catch (e) { navigate(href); } }
+document.addEventListener("click", e => {
+  // Internal links (Back, breadcrumb, Previous / Next, Applicant ID) are routed in-page
+  const link = e.target.closest && e.target.closest('a[href^="#"]');
+  if (link) {
+    const href = link.getAttribute("href");
+    e.preventDefault();
+    if (href === "#" || link.getAttribute("aria-disabled") === "true") return;
+    if (e.metaKey || e.ctrlKey) openNewTab(href); else navigate(href);
+    return;
+  }
+  if (editing && e.target.closest("[data-editable]")) return;
+  const t = e.target;
+  // list
+  const kt = t.closest("[data-kpitab]"); if (kt) { setQ({ tab: kt.dataset.kpitab, step: Q.step === "STALE" ? "" : Q.step }); syncControls(); return; }
+  const ks = t.closest("[data-kpistep]"); if (ks) { setQ({ tab: "ALL", step: Q.step === "STALE" ? "" : "STALE" }); syncControls(); return; }
+  const tab = t.closest("[data-tab]"); if (tab) { setQ({ tab: tab.dataset.tab }); return; }
+  const th = t.closest("th[data-sort]"); if (th) { const k = th.dataset.sort; setQ({ sort: k, dir: Q.sort === k ? String(-Number(Q.dir)) : (["created", "last", "idle", "limit"].includes(k) ? "-1" : "1") }, false); return; }
+  const clr = t.closest("[data-clear]"); if (clr) {
+    const k = clr.dataset.clear;
+    if (k === "all") setQ({ ...DEFAULT_Q, issuer: Q.issuer }); else if (k === "date") setQ({ from: "", to: "" }); else setQ({ [k]: DEFAULT_Q[k] });
+    syncControls(); return;
+  }
+  const tr = t.closest("#tbody tr[data-id]");
+  if (tr && !t.closest("a")) { const href = detailHref(tr.dataset.id); if (e.metaKey || e.ctrlKey) openNewTab(href); else navigate(href); return; }
+  // detail
+  const dt = t.closest("[data-dtab]"); if (dt) { detailTab = dt.dataset.dtab; document.querySelectorAll("[data-dtab]").forEach(b => b.classList.toggle("active", b === dt)); renderDetailTab(byId(detailId), true); return; }
+  const act = t.closest("[data-act]"); if (act) {
+    const a = byId(detailId);
+    if (act.dataset.act === "resend") { a.events.push({ at: now(), t: "Journey link resent", m: USER.email, ops: true }); toast(`Journey link resent to ${MASK.phone(a.phone_number)}`, "ok"); if (detailTab === "activity") renderDetailTab(a, false); }
+    if (act.dataset.act === "copylink") { navigator.clipboard?.writeText(location.href).catch(() => {}); toast("Link to this application copied", "ok"); }
+    return;
+  }
+  // exports centre
+  const jb = t.closest("[data-job]"); if (jb) { const id = jb.dataset.id; ({ dl: downloadJob, cancel: cancelJob, retry: retryJob })[jb.dataset.job](id); return; }
+  // export dialog
+  if (X) {
+    if (t.id === "mBack") { closeExport(); return; }
+    const cb = t.closest("input[data-col]"); if (cb) { const k = cb.dataset.col; if (cb.checked) { if (!X.cols.includes(k)) X.cols.push(k); } else X.cols = X.cols.filter(x => x !== k); selChanged(); return; }
+    const gb = t.closest("input[data-group]"); if (gb) {
+      const keys = colsFor(Q.issuer).filter(c => c.group === gb.dataset.group).map(c => c.key);
+      if (gb.checked) keys.forEach(k => { if (!X.cols.includes(k)) X.cols.push(k); }); else X.cols = X.cols.filter(k => !keys.includes(k));
+      selChanged(); return;
+    }
+    const mv = t.closest("[data-mv]"); if (mv) { const i = Number(mv.dataset.i), j = i + Number(mv.dataset.mv); [X.cols[i], X.cols[j]] = [X.cols[j], X.cols[i]]; renderSel(); renderPreview(); return; }
+    const rm = t.closest("[data-rm]"); if (rm) { X.cols = X.cols.filter(k => k !== rm.dataset.rm); selChanged(); return; }
+    const m = t.closest("[data-m]"); if (m) {
+      const a = m.dataset.m;
+      if (a === "close") closeExport();
+      else if (a === "all") { const s = X.search.trim().toLowerCase(); colsFor(Q.issuer).filter(c => colMatch(c, s)).forEach(c => { if (!X.cols.includes(c.key)) X.cols.push(c.key); }); selChanged(); }
+      else if (a === "none") { X.cols = []; selChanged(); }
+      else if (a === "preview") { X.preview = !X.preview; renderPreview(); }
+      else if (a === "start") startExport();
+      else if (a === "reset") { X.cols = tableColsFor(Q.issuer); X.search = ""; $("mSearch").value = ""; selChanged(); }
+      return;
+    }
+  }
+});
+document.addEventListener("auxclick", e => { const tr = e.target.closest("#tbody tr[data-id]"); if (e.button === 1 && tr && !e.target.closest("a")) openNewTab(detailHref(tr.dataset.id)); });
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") { if (X) closeExport(); else closeCentre(); }
+  if ((e.key === "Enter" || e.key === " ") && e.target.closest(".kpi")) { e.preventDefault(); e.target.closest(".kpi").click(); }
+});
+// drag to reorder selected columns
+let dragI = null;
+document.addEventListener("dragstart", e => { const li = e.target.closest && e.target.closest("#mSel li[data-i]"); if (!li) return; dragI = Number(li.dataset.i); li.classList.add("dragging"); e.dataTransfer.effectAllowed = "move"; });
+document.addEventListener("dragover", e => { const li = e.target.closest && e.target.closest("#mSel li[data-i]"); if (!li || dragI == null) return; e.preventDefault(); document.querySelectorAll("#mSel li").forEach(x => x.classList.toggle("drag-over", x === li)); });
+document.addEventListener("drop", e => {
+  const li = e.target.closest && e.target.closest("#mSel li[data-i]"); if (!li || dragI == null) return; e.preventDefault();
+  const to = Number(li.dataset.i); const [k] = X.cols.splice(dragI, 1); X.cols.splice(to, 0, k); dragI = null;
+  renderSel(); renderPreview();
+});
+document.addEventListener("dragend", () => { dragI = null; document.querySelectorAll("#mSel li").forEach(x => x.classList.remove("drag-over", "dragging")); });
+
+// prototype controls
+$("demoBtn").onclick = () => { $("demoPanel").hidden = !$("demoPanel").hidden; };
+$("dLarge").onchange = e => { demo.large = e.target.checked; updateExportCta(); if (X) renderSummary(); };
+$("dFail").onchange = e => { demo.fail = e.target.checked; };
+$("dBlock").onchange = e => { demo.blocked = e.target.checked; };
+$("dSlow").onchange = e => { demo.slow = e.target.checked; };
+$("dNewApp").onclick = () => {
+  const a = makeApp(DATA.SSFB.length + 5000, now(), true);
+  a.lastActivityAt = now(); DATA.SSFB.unshift(a);
+  toast(`New application ${a.application_id} created at ${showTime(a.createdAt)}. Exports already running won't include it.`, "info");
+  if (!$("listView").hidden) renderList();
+};
+$("dFF").onclick = () => { clockOffset += 24 * 3600e3 + 1000; tick(); toast("Clock moved forward 24 hours. Completed exports older than 24 hours are now Expired.", "info"); renderCentre(); if (!$("listView").hidden) renderList(); };
+$("dReset").onclick = () => { jobs = []; unseen = 0; renderCentre(); updateExportCta(); toast("Export history cleared", "info"); };
+
+seedJobs();
+route();
+renderCentre();
+</script>
+</body>
+</html>

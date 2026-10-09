@@ -1134,7 +1134,7 @@ function tick(){
     else if (j.status === "In progress") {
       const p = Math.min(1, (now() - j.startedAt) / j.duration);
       j.rowsWritten = Math.floor(p * j.estimate); changed = true;
-      if (j.failPlan && p > .55) { j.status = "Failed"; j.completedAt = now(); j.error = "Worker error while writing batch 2 (simulated)."; unseen++; toast("Export failed. Nothing was downloaded.", "bad", { label: "Retry", fn: () => retryJob(j.id) }); }
+      if (j.failPlan && p > .55) { j.status = "Failed"; j.completedAt = now(); j.error = "Worker error while writing batch 2 (simulated)."; unseen++; toast("Export failed. Nothing was downloaded. Start a new export from the Applications page.", "bad"); }
       else if (p >= 1) finishJob(j);
     } else if (j.status === "Completed" && now() > j.expiresAt) { j.status = "Expired"; changed = true; }
   }
@@ -1143,17 +1143,10 @@ function tick(){
 setInterval(tick, 400);
 function downloadJob(id){
   const j = jobs.find(x => x.id === id); if (!j) return;
-  if (j.status !== "Completed" || now() > j.expiresAt) { toast("This file was deleted after 24 hours. Run the export again.", "bad"); return; }
+  if (j.status !== "Completed" || now() > j.expiresAt) { toast("This file was deleted after 24 hours. Start a new export from the Applications page.", "bad"); return; }
   deliver(j, "logs"); toast("Downloading " + j.fileName, "ok"); renderCentre();
 }
 function cancelJob(id){ const j = jobs.find(x => x.id === id); if (!j || !isActive(j)) return; j.status = "Cancelled"; j.completedAt = now(); toast("Export cancelled. The partial file was deleted.", "info"); renderCentre(); updateExportCta(); }
-function retryJob(id){
-  const j = jobs.find(x => x.id === id); if (!j) return;
-  const r = createJob({ q: j.q, cols: j.cols, opt: j.opt });
-  if (r.error) { toast(r.msg, "bad"); return; }
-  toast("Preparing export… We'll let you know when it's ready. You can keep working.", "info");
-  renderCentre(); updateExportCta();
-}
 function seedJobs(){
   const mk = (agoMs, status, extra) => {
     const t = now() - agoMs;
@@ -1164,7 +1157,7 @@ function seedJobs(){
   };
   mk(4 * DAY, "Expired", { downloads: 1 });
   mk(20 * 3600e3, "Completed", { downloads: 1, filters: "Status: In progress", q: { ...DEFAULT_Q, tab: "In progress" } });
-  mk(5 * 3600e3, "Failed", { error: "Timed out after 15 minutes." });
+  mk(5 * 3600e3, "Failed", {});
   mk(2 * 3600e3, "Completed", { downloads: 2 });
   jobs.sort((x, y) => y.createdAt - x.createdAt);
 }
@@ -1184,7 +1177,7 @@ function renderCentre(){
     if (j.status === "Queued") line = "Waiting for a worker";
     if (j.status === "In progress") line = `${pct}% (${nf(j.rowsWritten)} of ${nf(j.estimate)} rows)`;
     if (j.status === "Completed") line = `${nf(j.rowCount)} rows · ${fmtBytes(j.size)} · <b>expires in ${leftLong(j.expiresAt)}</b>${j.downloads ? ` · downloaded ${j.downloads}×` : ""}`;
-    if (j.status === "Expired") line = `${nf(j.rowCount)} rows · file deleted after 24 hours`;
+    if (j.status === "Expired") line = `${nf(j.rowCount)} rows · file deleted after 24 hours. Start a new export from the Applications page.`;
     if (j.status === "Cancelled") line = "Cancelled. The partial file was deleted.";
     return `<div class="job">
       <div class="job-top"><div class="job-name">${esc(j.fileName)}</div>${statusBadge(j.status)}</div>
@@ -1192,11 +1185,10 @@ function renderCentre(){
       <div class="job-meta">${line}<br>
         Requested ${showDT(j.createdAt)} · ${esc(ISSUERS[j.issuer].name)} · ${j.cols.length} columns · PII masked<br>
         Filters: ${esc(j.filters || "None")}</div>
-      ${j.status === "Failed" ? `<div class="job-err">Export failed. Nothing was downloaded. ${esc(j.error || "")}</div>` : ""}
+      ${j.status === "Failed" ? `<div class="job-err">Export failed. Nothing was downloaded. Start a new export from the Applications page.</div>` : ""}
       <div class="job-actions">
         ${j.status === "Completed" ? `<button class="btn btn-sm btn-primary" data-job="dl" data-id="${j.id}">${DL_ICON}Download</button>` : ""}
         ${isActive(j) ? `<button class="btn btn-sm" data-job="cancel" data-id="${j.id}">Cancel</button>` : ""}
-        ${["Failed", "Expired", "Cancelled"].includes(j.status) ? `<button class="btn btn-sm" data-job="retry" data-id="${j.id}">${j.status === "Failed" ? "Retry" : "Run again"}</button>` : ""}
       </div></div>`;
   }).join("") : `<div class="empty">No exports in the last ${LIMITS.logDays} days. Use Export CSV on the Applications page.</div>`;
 }
@@ -1417,7 +1409,7 @@ document.addEventListener("click", e => {
     return;
   }
   // exports centre
-  const jb = t.closest("[data-job]"); if (jb) { const id = jb.dataset.id; ({ dl: downloadJob, cancel: cancelJob, retry: retryJob })[jb.dataset.job](id); return; }
+  const jb = t.closest("[data-job]"); if (jb) { const id = jb.dataset.id; ({ dl: downloadJob, cancel: cancelJob })[jb.dataset.job](id); return; }
   // export dialog
   if (X) {
     if (t.id === "mBack") { closeExport(); return; }

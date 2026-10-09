@@ -1232,7 +1232,7 @@ function openExport(){
   X = { cols: lastSelection ? [...lastSelection.cols] : tableColsFor(Q.issuer), header: lastSelection ? lastSelection.header : "label", dateFmt: "iso", summary: false, search: "", preview: false, error: "" };
   const iss = ISSUERS[Q.issuer];
   $("modalRoot").innerHTML = `<div class="modal-backdrop" id="mBack"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle">
-    <div class="modal-head"><div><h2 id="mTitle" data-editable>Export applications</h2><div class="cell-sub" id="mSub"></div></div><button class="icon-btn" data-m="close" aria-label="Close">✕</button></div>
+    <div class="modal-head"><div><h2 id="mTitle" data-editable>Export applications</h2></div><button class="icon-btn" data-m="close" aria-label="Close">✕</button></div>
     <div class="modal-body">
       <div>
         <div class="section-title" style="margin-top:0;display:flex;justify-content:space-between;align-items:center"><span>Available columns</span><button class="btn btn-link btn-sm" data-m="reset" style="text-transform:none;letter-spacing:0">Reset to table columns</button></div>
@@ -1242,12 +1242,6 @@ function openExport(){
       <div>
         <div class="section-title" style="margin-top:0;display:flex;justify-content:space-between"><span>Selected columns · <span id="mSelCount"></span></span><span style="text-transform:none;font-weight:400;letter-spacing:0">Drag to reorder</span></div>
         <ul class="sel-list" id="mSel"></ul>
-        <div class="opts">
-          <div class="opt"><label>Headers</label><select class="select" id="mHeader"><option value="label">Readable labels</option><option value="mis">System keys</option></select></div>
-          <div class="opt"><label>Date format</label><select class="select" id="mDate"><option value="iso">YYYY-MM-DD</option><option value="dmy">DD-MM-YYYY</option></select></div>
-          <div class="check" style="cursor:default"><span>🔒</span><span>PII is always masked<small>Mobile, email, date of birth, PAN and FD account number. Unmasking is phase 2.</small></span></div>
-          <label class="check"><input type="checkbox" id="mSummary" /> <span>Add filter summary row<small>First line lists issuer, filters, snapshot time and row count</small></span></label>
-        </div>
         <div class="summary" id="mSummaryBox"></div>
         <div id="mErr"></div>
         <button class="btn btn-link btn-sm" data-m="preview" id="mPrevBtn" style="padding-left:0;margin-top:6px">Show preview (first 5 rows)</button>
@@ -1260,12 +1254,7 @@ function openExport(){
       <button class="btn" data-m="close">Cancel</button>
       <button class="btn btn-primary" data-m="start" id="mStart">${DL_ICON}Start export</button>
     </div></div></div>`;
-  $("mSub").textContent = `${iss.name} · ${iss.program}`;
-  $("mHeader").value = X.header; $("mDate").value = X.dateFmt; $("mSummary").checked = X.summary;
   $("mSearch").oninput = e => { X.search = e.target.value; renderPicker(); };
-  $("mHeader").onchange = e => { X.header = e.target.value; renderSel(); renderPreview(); };
-  $("mDate").onchange = e => { X.dateFmt = e.target.value; renderPreview(); };
-  $("mSummary").onchange = e => { X.summary = e.target.checked; renderPreview(); };
   renderDialog();
   setTimeout(() => $("mSearch").focus(), 30);
 }

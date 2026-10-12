@@ -1236,8 +1236,6 @@ function openExport(){
         <ul class="sel-list" id="mSel"></ul>
         <div class="summary" id="mSummaryBox"></div>
         <div id="mErr"></div>
-        <button class="btn btn-link btn-sm" data-m="preview" id="mPrevBtn" style="padding-left:0;margin-top:6px">Show preview (first 5 rows)</button>
-        <div id="mPreview"></div>
       </div>
     </div>
     <div class="modal-foot">
@@ -1298,15 +1296,7 @@ function renderSummary(){
   $("mErr").innerHTML = X.error ? `<div class="err">${esc(X.error)}</div>` : over ? `<div class="err">Export contains too many records (max ${nf(LIMITS.maxRows)}). Please apply additional filters and try again.</div>` : "";
   $("mStart").disabled = over || !X.cols.length;
 }
-function renderPreview(){
-  if (!X) return;
-  $("mPrevBtn").textContent = X.preview ? "Hide preview" : "Show preview (first 5 rows)";
-  if (!X.preview || !X.cols.length) { $("mPreview").innerHTML = ""; return; }
-  const rows = filtered().slice(0, 5);
-  const opt = { dateFmt: X.dateFmt, header: X.header };
-  $("mPreview").innerHTML = `<div class="preview-wrap"><table><thead><tr>${X.cols.map(k => `<th>${esc(headerOf(COL[k], X.header))}</th>`).join("")}</tr></thead>
-    <tbody>${rows.map(a => `<tr>${X.cols.map(k => { const v = fmtValue(COL[k], a, opt); return `<td class="${NUMERIC.has(COL[k].type) ? "num" : ""}">${v === "" ? `<span class="cell-sub">(blank)</span>` : esc(v)}</td>`; }).join("")}</tr>`).join("")}</tbody></table></div>`;
-}
+function renderPreview(){}   // preview removed
 function selChanged(){ X.error = ""; renderPicker(); renderSel(); renderSummary(); renderPreview(); }
 function startExport(){
   if (!X.cols.length) { X.error = "Select at least one column to export."; renderSummary(); return; }
@@ -1426,7 +1416,6 @@ document.addEventListener("click", e => {
       if (a === "close") closeExport();
       else if (a === "all") { const s = X.search.trim().toLowerCase(); colsFor(Q.issuer).filter(c => colMatch(c, s)).forEach(c => { if (!X.cols.includes(c.key)) X.cols.push(c.key); }); selChanged(); }
       else if (a === "none") { X.cols = []; selChanged(); }
-      else if (a === "preview") { X.preview = !X.preview; renderPreview(); }
       else if (a === "start") startExport();
       else if (a === "reset") { X.cols = tableColsFor(Q.issuer); X.search = ""; $("mSearch").value = ""; selChanged(); }
       return;

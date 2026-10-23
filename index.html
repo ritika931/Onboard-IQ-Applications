@@ -310,20 +310,31 @@ input[type=range]{width:100%;accent-color:var(--brand)}
 .slots{display:grid;grid-template-columns:repeat(3,1fr)}
 .slots .chip{text-align:center;padding:9px 4px;font-variant-numeric:tabular-nums}
 .chip:disabled{opacity:.45;text-decoration:line-through;cursor:not-allowed}
+.tg{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px dashed var(--line);cursor:pointer}
+.tg:last-child{border-bottom:0}
+.tg span{flex:1;min-width:0}.tg b{display:block;font-size:14px}.tg small{font-size:12px;color:var(--muted)}
+.tg input{position:absolute;opacity:0;width:1px;height:1px}
+.tg i{width:44px;height:26px;border-radius:99px;background:var(--line);position:relative;flex:none;transition:background .2s}
+.tg i::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:transform .2s}
+.tg input:checked+i{background:var(--brand)}
+.tg input:checked+i::after{transform:translateX(18px)}
+.tg input:disabled+i{opacity:.55}
+.tg input:focus-visible+i{outline:2px solid var(--brand);outline-offset:2px}
+.jlink{color:#B9A9FF;font-size:14px;font-weight:600;text-decoration:none}
+.jlink:hover{text-decoration:underline}
+.prog{display:flex}.prog i{flex:1}
+/* single-column stage: phone only, full-screen on phones */
+.stage{grid-template-columns:auto}
+.phone{height:min(844px,calc(100vh - 48px));height:min(844px,calc(100dvh - 48px))}
+@media (max-width:520px){.phone{height:100%}.stage,.device{min-height:100%;min-height:100dvh}}
+html,body{margin:0}
 </style>
+<style>@media (max-width:520px){.phone{padding-top:env(safe-area-inset-top,0px)}}</style>
 </head>
 <body>
 
 
 <div class="stage">
-  <aside class="panel" aria-label="Journey map">
-    <div class="pbrand"><span class="hf big">hyperface</span><span class="ptag">Onboard IQ</span></div>
-    <h1 class="ptitle">Co-branded credit card onboarding</h1>
-    <p class="pdesc">An interactive prototype of a fully digital credit card journey for individual customers, from first visit to an activated card. Tap through the phone, or jump to any screen below. Every value is sample data.</p>
-    <nav id="nav"></nav>
-    <div class="note"><p class="nk">What happens on this screen</p><p id="note"></p></div>
-    <button class="ghost" id="restart" type="button">Restart journey</button>
-  </aside>
   <main class="device">
     <div class="phone" id="phone">
       <div class="status" aria-hidden="true"><span>9:41</span><span class="sig"><i style="width:3px;height:5px"></i><i style="width:3px;height:7px"></i><i style="width:3px;height:9px"></i><i style="width:3px;height:11px"></i><i style="width:22px;height:11px;border-radius:3px;margin-left:4px"></i></span></div>
@@ -349,6 +360,7 @@ const CFG = {
   welcome: 500,              // welcome voucher, ₹
   fee: 500,                  // joining & annual fee, ₹ (+GST)
   feeWaiver: 200000,         // annual spend for fee waiver, ₹
+  signedLabel: 'Sanction letter and KFS',
 };
 
 const D = { mobile:'98765 43210', pan:'ABCPS1234K', dob:'14/08/1992', name:'Rahul Sharma', email:'rahul.sharma@gmail.com',
@@ -364,18 +376,16 @@ const FLOW = [
   {id:'pan', label:'PAN verification', g:'Profile', note:'PAN is validated in real time. The name and date of birth returned pre-fill later screens.'},
   {id:'personal', label:'Personal details', g:'Profile', note:'Only the fields the issuer policy needs. Pincode lookup fills city and state and checks serviceability.'},
   {id:'income', label:'Work & income', g:'Profile', note:'Employer search and declared income. Account Aggregator can verify income instantly, which helps thin-file customers get a higher limit.'},
-  {id:'fetching', label:'Eligibility check', g:'Offer', note:'Bureau pull, policy rules and limit assignment run in the decision engine, typically in a few seconds.'},
+  {id:'kyc', label:'KYC overview', g:'KYC', note:'KYC runs before the credit decision, so the limit is assigned only to a verified customer. Sets expectations and tells the customer they are moving to the issuer’s secure pages.'},
+  {id:'ekyc', label:'Aadhaar eKYC (issuer)', g:'KYC', note:'Redirect to the issuer’s hosted eKYC page via the issuer API. Aadhaar OTP is verified with UIDAI and only the result comes back to the journey.'},
+  {id:'vkyc', label:'Video KYC & scheduling', g:'KYC', note:'Start video KYC now or book a slot, day and language, through the issuer’s VKYC platform. The officer’s live check covers face match and liveness, so no separate selfie step is needed.'},
+  {id:'fetching', label:'Eligibility check', g:'Offer', note:'With KYC complete, the bureau pull, policy rules and limit assignment run in the decision engine, typically in a few seconds.'},
   {id:'offer', label:'Card offer', g:'Offer', note:'Approved limit and fees from the issuer policy. Customers can choose a lower limit, as RBI card directions require.'},
   {id:'personalise', label:'Personalise card', g:'Offer', note:'Name on card with a live preview, statement date and delivery address.'},
-  {id:'kyc', label:'KYC overview', g:'KYC', note:'Sets expectations for the three KYC steps and tells the customer they are moving to the issuer’s secure pages.'},
-  {id:'ekyc', label:'Aadhaar eKYC (issuer)', g:'KYC', note:'Redirect to the issuer’s hosted eKYC page via the issuer API. Aadhaar OTP is verified with UIDAI and only the result comes back to the journey.'},
-  {id:'selfie', label:'Selfie & liveness', g:'KYC', note:'Passive liveness check plus a face match against the Aadhaar photo.'},
-  {id:'vkyc', label:'Video KYC & scheduling', g:'KYC', note:'Start video KYC now or book a slot, day and language. Both redirect to the issuer’s VKYC platform via its API; the booking or result is returned to the journey.'},
-  {id:'bank', label:'Bank verification', g:'Bank', note:'Penny-drop verification with a name match against PAN, confirming the customer holds an active account in their name.'},
   {id:'kfs', label:'Sanction letter & KFS', g:'Sign & activate', note:'Sanction letter and Key Fact Statement shown before signing, with MITC linked. All are e-signed together with Aadhaar OTP.'},
-  {id:'activate', label:'Card activation', g:'Sign & activate', note:'The customer activates the card. This is the end of onboarding; usage and repayment set-up happen in the card app afterwards.'},
+  {id:'activate', label:'Card activation', g:'Sign & activate', note:'OTP-based activation. Only in-store use in India is on by default; the customer turns on online, contactless and international use.'},
 ];
-const STAGES = ['Sign up','Profile','Offer','KYC','Bank','Sign & activate'];
+const STAGES = ['Sign up','Profile','KYC','Offer','Sign & activate'];
 
 /* ===== helpers ===== */
 const $ = s => document.querySelector(s);
@@ -482,7 +492,7 @@ V.landing = () => `<div class="scr"><div class="body landing">
   <h3>Who can apply</h3>
   <div class="elig"><div><b>21–60 years</b><span>Age</span></div><div><b>₹25,000+</b><span>Monthly income</span></div><div><b>Indian resident</b><span>With PAN & Aadhaar</span></div><div><b>Salaried or self-employed</b><span>Employment</span></div></div>
   <h3>How it works</h3>
-  <ol class="how"><li><b>Check your offer</b><span>Mobile number, PAN and income details</span></li><li><b>Complete KYC</b><span>Aadhaar OTP, a selfie and your bank account</span></li><li><b>Start using your card</b><span>Virtual card instantly, physical card in 5–7 days</span></li></ol>
+  <ol class="how"><li><b>Share your details</b><span>Mobile number, PAN and income details</span></li><li><b>Complete KYC</b><span>Aadhaar eKYC and a short video call</span></li><li><b>Get your offer and activate</b><span>See your limit, e-sign and activate your card</span></li></ol>
   <div class="card"><div class="kv">
     <div><span>Joining fee</span><b>${fmt(CFG.fee)} + GST</b></div><div><span>Annual fee</span><b>${fmt(CFG.fee)} + GST, waived on ${lakh(CFG.feeWaiver)} spend</b></div><div><span>Interest-free period</span><b>Up to 50 days</b></div></div></div>
   <p class="disc">The ${CFG.brand} Credit Card is issued by ${CFG.issuer}. Approval, limit and benefits are at the bank's discretion and subject to its terms. ${CFG.brand} is a co-brand partner.</p>
@@ -525,11 +535,11 @@ V.income = () => scr('income', `${head('income','Your work and income','This hel
   ${field('f-co','Company name',D.company,{k:'company'})}
   ${field('f-inc','Monthly take-home income',D.income,{k:'income',pre:'₹',mode:'numeric',hint:'After tax, as credited to your bank account'})}
   <div id="aawrap"><button class="opt" type="button" id="aa"><span class="oi">${ic('bank')}</span><span class="ot"><b>Verify income instantly <span class="badge b">Optional</span></b><span>Share 6 months of bank statements via Account Aggregator. Often gets a higher limit.</span></span></button></div>`,
-  `<button class="btn" type="button" id="go">Check my offer</button>`);
+  `<button class="btn" type="button" id="go">Continue to KYC</button>`);
 M.income = () => {
   $('#aa').onclick = () => { $('#aa').disabled=true; $('#aa').querySelector('.ot span').textContent='Waiting for consent in the Account Aggregator app…';
     later(1600,()=>{ $('#aawrap').innerHTML = vcard('Income verified via Account Aggregator', '₹86,400 average monthly credit'); }); };
-  $('#go').onclick = () => go('fetching');
+  $('#go').onclick = () => go('kyc');
 };
 
 V.fetching = () => scr('fetching', `<div class="center"><div class="ring"></div><div><h2 style="margin:0">Finding your best offer</h2><p class="lead" style="margin:6px 0 0">This takes a few seconds. Please don’t close the app.</p></div>
@@ -554,7 +564,7 @@ V.personalise = () => scr('personalise', `${head('personalise','Personalise your
   ${field('f-cn','Name on card',D.cardName,{k:'cardName',up:true,max:19,suf:`<span class="namelen" id="nl">${D.cardName.length}/19</span>`})}
   <div class="fld"><span>Statement date</span>${chips('stmt',['1st','5th','15th','20th'])}<small>Payment is due 20 days after the statement date.</small></div>
   <div class="fld"><span>Deliver my card to</span>${chips('deliver',['Home','Office'])}</div>`,
-  `<button class="btn" type="button" data-go="kyc">Continue to KYC</button>`);
+  `<button class="btn" type="button" data-go="kfs">Continue</button>`);
 M.personalise = () => {
   const nm=$('#f-cn'); nm.addEventListener('input',()=>{ const v=nm.value.toUpperCase(); D.cardName=v; $('#pvname').textContent=v||'Your name'; $('#nl').textContent=`${v.length}/19`; });
 };
@@ -566,11 +576,10 @@ function redirect(msg, sub, cb){
   app.appendChild(r); later(1500,()=>{ r.remove(); cb(); });
 }
 
-V.kyc = () => scr('kyc', `${head('kyc','Verify your identity','Required by RBI before your card can be issued. Both steps happen on '+CFG.issuer+'’s secure pages.')}
+V.kyc = () => scr('kyc', `${head('kyc','Verify your identity','We verify your identity before deciding your credit limit. Both steps happen on '+CFG.issuer+'’s secure pages.')}
   <div class="card" style="gap:0">
     <div class="bl"><span class="bi">${ic('id',18)}</span><div style="flex:1"><b>1. Aadhaar eKYC</b><span>Verify with an OTP on your Aadhaar-linked mobile. About 2 minutes.</span></div></div>
-    <div class="bl"><span class="bi">${ic('face',18)}</span><div style="flex:1"><b>2. Selfie</b><span>A quick photo to match with your Aadhaar.</span></div></div>
-    <div class="bl"><span class="bi">${ic('video',18)}</span><div style="flex:1"><b>3. Video KYC</b><span>A 5-minute call with a bank officer. Do it now or book a slot.</span></div></div>
+    <div class="bl"><span class="bi">${ic('video',18)}</span><div style="flex:1"><b>2. Video KYC</b><span>A 5-minute call with a bank officer, who also confirms it’s you. Do it now or book a slot.</span></div></div>
   </div>
   <div class="vcard" style="background:var(--iss-soft);border-color:#C6DFE2"><span class="vi" style="background:var(--iss)">${ic('lock',16)}</span><div style="flex:1;min-width:0"><p class="k">You’ll be taken to ${CFG.issuer}</p><p class="v" style="font-weight:500;font-size:13px">Your Aadhaar details go straight to the bank. ${CFG.brand} never sees them.</p></div></div>`,
   `<button class="btn" type="button" id="go">Start Aadhaar eKYC</button>`);
@@ -601,7 +610,7 @@ M.ekyc = () => { let phase=0;
       <div><span>Name</span><b>${D.name}</b></div><div><span>DOB</span><b>${D.dob}</b></div><div><span>Gender</span><b>${D.gender}</b></div></div></div>
       <div class="kv"><div><span>Address</span><b style="max-width:60%">${D.address}, Bengaluru, Karnataka ${D.pincode}</b></div><div><span>Aadhaar</span><b>XXXX XXXX 9012</b></div><div><span>Name match with PAN</span><b style="color:var(--ok)">100%</b></div></div></div>`;
       unload($('#go'),`Return to ${CFG.brand}`); }); return; }
-    redirect(`Returning to ${CFG.brand}`, 'Your KYC result has been shared securely.', ()=>go('selfie'));
+    redirect(`Returning to ${CFG.brand}`, 'Your KYC result has been shared securely.', ()=>go('vkyc'));
   };
 };
 
@@ -609,7 +618,7 @@ const vDays = () => { const out=[]; for(let i=0;i<5;i++){ const d=new Date(Date.
 const SLOTS = [['10:00 AM',0],['10:30 AM',1],['11:00 AM',0],['11:30 AM',0],['12:00 PM',1],['2:00 PM',0],['3:30 PM',0],['5:00 PM',1],['6:30 PM',0]];
 
 V.vkyc = () => { if(!D.vday) D.vday=vDays()[1];
-  return scr('vkyc', `${head('vkyc','Complete your video KYC',`A 5-minute call with a ${CFG.issuer} officer to fully activate your card. Available 9 AM to 9 PM, every day.`)}
+  return scr('vkyc', `${head('vkyc','Complete your video KYC',`A 5-minute call with a ${CFG.issuer} officer. Your credit limit is decided once it’s done. Available 9 AM to 9 PM, every day.`)}
   <div class="opts">
     ${opt('vmode','now','video','Start now','Officers available · about 2 min wait','Live')}
     ${opt('vmode','schedule','clock','Book a slot','Pick a day and time that suits you')}
@@ -633,14 +642,14 @@ M.vkyc = () => {
       if(!D.vslot){ toast('Pick a time slot'); return; }
       redirect(`Booking your slot with ${CFG.issuer}`, `${CFG.issuerHost}`, ()=>{
         showSheet(`${vcard('Video KYC booked', `${D.vday}, ${D.vslot}`, 'Scheduled')}
-          <p class="lead" style="margin:0">Call in ${D.vlang}. We’ll send the link by SMS and email, with a reminder 15 minutes before. You can reschedule from the ${CFG.brand} app.</p>
-          <button class="btn sec" type="button" id="cal">Add to calendar</button><button class="btn" type="button" id="sgo">Continue</button>`);
-        $('#cal').onclick=()=>toast('Added to your calendar'); $('#sgo').onclick=()=>go('bank');
+          <p class="lead" style="margin:0">Call in ${D.vlang}. We’ll send the link by SMS and email, with a reminder 15 minutes before. Your credit offer is shared right after the call.</p>
+          <button class="btn sec" type="button" id="cal">Add to calendar</button><button class="btn" type="button" id="sgo">See what happens after the call</button>`);
+        $('#cal').onclick=()=>toast('Added to your calendar'); $('#sgo').onclick=()=>go('fetching');
       });
     } else {
       redirect(`Connecting to ${CFG.issuer} video KYC`, `${CFG.issuerHost}<br>Allow camera and microphone when asked.`, ()=>{
         showSheet(`<h3>Video KYC with ${CFG.issuer}</h3><div class="timer" id="vt"><div class="ring"></div><div><b>Waiting for an officer</b><p class="fine">In the live journey the call runs on the bank’s page. The prototype skips ahead.</p></div></div><button class="btn sec" type="button" id="sgo" disabled>On call…</button>`);
-        later(2200,()=>{ $('#vt').outerHTML=vcard('Video KYC','Completed','Done'); $('#sgo').disabled=false; $('#sgo').className='btn'; $('#sgo').textContent='Continue'; $('#sgo').onclick=()=>go('bank'); });
+        later(2200,()=>{ $('#vt').outerHTML=vcard('Video KYC','Completed','Done'); $('#sgo').disabled=false; $('#sgo').className='btn'; $('#sgo').textContent='Continue'; $('#sgo').onclick=()=>go('fetching'); });
       });
     }
   };
@@ -698,30 +707,40 @@ M.kfs = () => {
   };
 };
 
+const tg = (id, title, sub, on, locked) => `<label class="tg" for="${id}"><span><b>${title}</b><small>${sub}</small></span><input type="checkbox" role="switch" id="${id}" ${on?'checked':''} ${locked?'disabled':''}><i></i></label>`;
 V.activate = () => scr('activate', `<div id="act" style="display:flex;flex-direction:column;gap:18px">
-  ${head('activate','Activate your card','Your documents are signed and your card is set up. Activate it to start using your credit limit.')}
-  ${vcard('Sanction letter and KFS','E-signed','Signed')}
+  ${head('activate','Activate your card','Your documents are signed. Choose how you’ll use the card, then confirm activation with an OTP.')}
+  ${vcard(CFG.signedLabel,'E-signed','Signed')}
   ${ccard({name:D.cardName, num:'•••• •••• •••• 4821'})}
   <div class="card"><div class="kv">
     <div><span>Credit limit</span><b>${fmt(D.limit)}</b></div>
     <div><span>Card</span><b>${CFG.brand} Credit Card · ${CFG.variant}</b></div>
-    <div><span>Issued by</span><b>${CFG.issuer}</b></div></div></div></div>`,
+    <div><span>Issued by</span><b>${CFG.issuer}</b></div></div></div>
+  <div class="card" style="gap:2px"><b>How you’ll use the card</b><p class="fine" style="margin-bottom:4px">As per RBI rules, only in-store use in India is on by default. Turn on what you need. You can change this anytime.</p>
+    ${tg('u1','In-store in India','Swipe or insert with your PIN',true,true)}
+    ${tg('u2','Online payments',`Needed to shop on ${CFG.brand}`,false)}
+    ${tg('u3','Tap to pay','Contactless, up to ₹5,000 without a PIN',false)}
+    ${tg('u4','International use','Online and in-store outside India',false)}</div></div>`,
   `<button class="btn" type="button" id="go">Activate card</button>`);
 M.activate = () => { let done=false; $('#go').onclick = () => {
   if(done){ toast(`The customer returns to the ${CFG.brand} app`); return; }
-  load($('#go'),'Activating your card'); later(1400,()=>{ done=true;
+  const uses=[['u1','In-store in India'],['u2','Online payments'],['u3','Tap to pay'],['u4','International use']].filter(([id])=>$('#'+id).checked).map(x=>x[1]);
+  showSheet(`<h3>Confirm activation</h3><p class="lead" style="margin:0">Enter the OTP sent to +91 ${D.mobile} to activate your card.</p>${otpBoxes('o4')}<button class="btn" type="button" id="sgo" disabled>Activate</button>`);
+  const o=wireOtp('o4',()=>$('#sgo').disabled=false); later(700,()=>o.fill('208416'));
+  $('#sgo').onclick = () => { load($('#sgo'),'Activating your card'); later(1300,()=>{ hideSheet(); done=true;
     $('#act').innerHTML = `<div class="center" style="flex:none;padding-top:8px;gap:14px"><span class="done-badge">${ic('check',44)}</span><div><h2 style="margin:0">Your card is active</h2><p class="lead" style="margin:6px 0 0">You’re all set, ${D.name.split(' ')[0]}.</p></div></div>
       ${ccard({name:D.cardName, num:'•••• •••• •••• 4821'})}
       <div class="card"><div class="kv">
         <div><span>Available limit</span><b>${fmt(D.limit)}</b></div>
         <div><span>Card ending</span><b>4821</b></div>
-        <div><span>Activated on</span><b>${plus(0)}</b></div></div></div>
+        <div><span>Activated on</span><b>${plus(0)}</b></div>
+        <div><span>Turned on</span><b>${uses.join(', ')}</b></div></div></div>
       <p class="powered">Powered by <span class="hf">hyperface</span></p>`;
     app.querySelector('.foot').innerHTML = `<button class="btn" type="button" id="go2">Back to ${CFG.brand}</button><button class="btn sec" type="button" data-go="landing">Restart demo</button>`;
     $('#go2').onclick = () => toast(`The customer returns to the ${CFG.brand} app`);
     app.querySelectorAll('.prog i').forEach(i=>i.className='done');
-    renderNav();
-  }); }; };
+  }); };
+}; };
 
 /* ===== router ===== */
 function go(id){
@@ -740,12 +759,13 @@ app.addEventListener('click', e => {
 app.addEventListener('input', e => { const k=e.target.dataset && e.target.dataset.k; if(k) D[k]=e.target.value; });
 
 function renderNav(){
+  if(!$('#nav')) return;
   const ci=FLOW.findIndex(x=>x.id===cur); const groups=[...new Set(FLOW.map(f=>f.g))];
   $('#nav').innerHTML = groups.map(g=>`<div class="ng"><p>${g}</p>${FLOW.map((f,i)=>f.g!==g?'':`<button type="button" data-jump="${f.id}" class="${i===ci?'on':i<ci?'past':''}"><span class="n">${String(i+1).padStart(2,'0')}</span>${f.label}</button>`).join('')}</div>`).join('');
   $('#note').textContent = FLOW[ci].note;
 }
-$('#nav').addEventListener('click', e => { const b=e.target.closest('[data-jump]'); if(b) go(b.dataset.jump); });
-$('#restart').onclick = () => go('landing');
+$('#nav')?.addEventListener('click', e => { const b=e.target.closest('[data-jump]'); if(b) go(b.dataset.jump); });
+if($('#restart')) $('#restart').onclick = () => go('landing');
 
 const h=(location.hash||'').slice(1);
 go(FLOW.some(f=>f.id===h)?h:'landing');
